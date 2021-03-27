@@ -31,7 +31,7 @@ case $ORIGINAL_LINK in
 	*"clips.twitch.tv"* | \
 	*"livestreamfails.com"* | \
 	*"streamable.com"* | \
-	*"lbry.tv"* | \
+	*"odysee.com"* | \
 	*"bitchute.com"*)
 		chosenProgram=mpv
 		;;
