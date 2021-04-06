@@ -29,7 +29,6 @@ case $ORIGINAL_LINK in
 		chosenProgram=mpv-invidious
 		;;
 	*"clips.twitch.tv"* | \
-	*"livestreamfails.com"* | \
 	*"streamable.com"* | \
 	*"odysee.com"* | \
 	*"bitchute.com"*)
