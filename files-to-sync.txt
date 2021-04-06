@@ -13,9 +13,3 @@ bin/
 .config/irssi/
 .config/ncmpcpp/
 Pictures/
-
-# Large Media Files
-# .Music/
-# Games/Collection/pcGames/
-# Games/Collection/switch/
-# videos/
