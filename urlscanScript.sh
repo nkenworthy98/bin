@@ -19,6 +19,10 @@ ORIGINAL_LINK=$1
 
 # if [[ ( "$1" =~ \.png$ ) || ( "$1" =~ \.jpg$ ) || ( "$1" =~ \.gif$ ) ]]; then
 
+if [ "$ORIGINAL_LINK" == "" ]; then
+	exit
+fi
+
 case $ORIGINAL_LINK in
 	*".png" | \
 	*".jpg" | \
