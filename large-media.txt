@@ -1,5 +1,5 @@
 # Large Media Files
-# .Music/
+.Music/
 # Games/Collection/pcGames/
 # Games/Collection/switch/
 # videos/
