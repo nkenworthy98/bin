@@ -16,15 +16,12 @@ case $ORIGINAL_LINK in
 	*"youtube.com"*)
 		chosenProgram=mpv-invidious
 		;;
-	# *"clips.twitch.tv"* | \
+	*"clips.twitch.tv"* | \
 	*"streamable.com"* | \
 	*"odysee.com"* | \
 	*"videos.lukesmith.xyz"* | \
 	*"bitchute.com"*)
 		chosenProgram=mpv
-		;;
-	*"clips.twitch.tv"*)
-		chosenProgram=tmp-firefox
 		;;
 	*)
 		;;
@@ -43,9 +40,6 @@ case $chosenProgram in
 		;;
 	sxiv)
 		curl -o /tmp/sxivtmpfile "$ORIGINAL_LINK" && sxiv -a /tmp/sxivtmpfile
-		;;
-	tmp-firefox)
-		firefox "$ORIGINAL_LINK"
 		;;
 	*)
 		echo -n "$ORIGINAL_LINK" | xclip -selection c
