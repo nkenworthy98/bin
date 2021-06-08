@@ -23,19 +23,19 @@ BIBLIOGRAM_INSTANCE="bibliogram.nixnet.services/u"
 case "$FILTERED_LINK" in
     *"youtube.com"*)
         echo "${FILTERED_LINK/youtube.com/$INVIDIOUS_INSTANCE}" | xclip -selection c
-        notify-send "Youtube link converted to invidious link"
+        notify-send -h string:frcolor:#FA0000 "Youtube link converted to invidious link"
         ;;
     *"twitter.com"*)
         echo "${FILTERED_LINK/twitter.com/$NITTER_INSTANCE}" | xclip -selection c
-        notify-send "Twitter link converted to nitter link"
+        notify-send -h string:frcolor:#FAFAFA "Twitter link converted to nitter link"
         ;;
     *"reddit.com"*)
         echo "${FILTERED_LINK/reddit.com/teddit.net}" | xclip -selection c
-        notify-send "Reddit link converted to teddit link"
+        notify-send -h string:frcolor:#FF4500 "Reddit link converted to teddit link"
         ;;
     *"instagram.com"*)
         echo "${FILTERED_LINK/instagram.com/$BIBLIOGRAM_INSTANCE}" | xclip -selection c
-        notify-send "Instagram link converted to bibliogram link"
+        notify-send -h string:frcolor:#833BB4 "Instagram link converted to bibliogram link"
         ;;
     *)
         notify-send "Link in clipboard was not converted"
