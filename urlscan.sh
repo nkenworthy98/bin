@@ -31,10 +31,14 @@ esac
 # notify-send "$1 is now opening in $chosenProgram"
 case $chosenProgram in 
 	mpv)
-		mpv "$ORIGINAL_LINK" || notify-send "Error when opening link"
+		mpv "$ORIGINAL_LINK" ||
+			iformat-mpv.sh "$ORIGINAL_LINK" || \
+				notify-send "Error when opening link"
 		;;
 	mpv-invidious)
-		mpv "${ORIGINAL_LINK/https:\/\/www.youtube.com/http:\/\/$INVIDIOUS_SITE}" || notify-send "Error when opening link"
+		mpv "${ORIGINAL_LINK/https:\/\/www.youtube.com/http:\/\/$INVIDIOUS_SITE}" || \
+			iformat-mpv.sh "$ORIGINAL_LINK" || \
+				notify-send "Error when opening link"
 		;;
 	mpv-bitchute)
 		mpv "$ORIGINAL_LINK" || notify-send "Error when opening link"
