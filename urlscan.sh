@@ -18,6 +18,7 @@ case $ORIGINAL_LINK in
 		;;
 	*"clips.twitch.tv"* | \
 	*"streamable.com"* | \
+	*"twitch.tv"* | \
 	*"odysee.com"* | \
 	*"videos.lukesmith.xyz"* | \
 	*"bitchute.com"*)
