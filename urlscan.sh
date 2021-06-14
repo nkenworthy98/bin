@@ -1,7 +1,7 @@
 #!/bin/bash
 INVIDIOUS_SITE=localhost:3000
 
-ORIGINAL_LINK=$1
+ORIGINAL_LINK="$1"
 
 if [ "$ORIGINAL_LINK" == "" ]; then
 	exit
