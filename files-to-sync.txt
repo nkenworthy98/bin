@@ -9,6 +9,7 @@ bin/
 .password-store/
 .config/reflex-curses/
 .config/mpv/
+.config/beets/
 .config/sxhkd/
 .config/irssi/
 .config/ncmpcpp/
