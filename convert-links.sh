@@ -14,7 +14,7 @@ LINK=$(xclip -selection c -o)
 FILTERED_LINK=${LINK/www./}
 
 INVIDIOUS_INSTANCE="invidious.kavin.rocks"
-NITTER_INSTANCE="nitter.cattube.org"
+NITTER_INSTANCE="nitter.domain.glass"
 
 # /u at the end is required in order to be brought
 # to the correct page
