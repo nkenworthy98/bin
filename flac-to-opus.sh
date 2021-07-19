@@ -11,14 +11,11 @@ OPUS_PATH="$ORIG_PATH [OPUS]"
 
 cp -r "$ORIG_PATH" "$OPUS_PATH"
 
-# Convert all "*.flac" files to opus
-find "$OPUS_PATH" -name "*.flac" -type f -exec opusenc '{}' '{}'.opus \;
-find "$OPUS_PATH" -name "*.flac" -type f -exec rm '{}' \;
-
-# Removes the ".flac" substring from all the "*.flac.opus" files
-find "$OPUS_PATH" -name "*.flac.opus" -type f -exec rename '.flac' '' '{}' \;
+# Convert all "*.flac" files to opus in parallel
+find "$OPUS_PATH" -name "*.flac" -type f | parallel opusenc '{}' '{.}'.opus
+find "$OPUS_PATH" -name "*.flac" -type f -exec rm '{}' +
 
 # Update any ".cue" files to have "opus" instead of "flac"
 # Only necessary if the flac files are accompanied with
 # cue files specifying different tracks in a CD
-find "$OPUS_PATH" -name "*.cue" -exec sed -i 's/.flac/.opus/g' {} \;
+find "$OPUS_PATH" -name "*.cue" -exec sed -i 's/.flac/.opus/g' {} +
