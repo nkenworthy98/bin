@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+# Small wrapper for pdftk
+# to quickly split pdf
+use strict;
+use warnings;
+
+chomp(my $input_pdf = `find Documents -iname "*.pdf" | fzf`);
+
+print "Enter in the page(s) that you want output (See 3 examples below):\n";
+print "\t1\n";
+print "\t1 3 5\n";
+print "\t2-3\n";
+print "\n";
+chomp(my $pages = <STDIN>);
+
+print "Enter in the name of the output pdf (don't include the .pdf at the end)\n";
+chomp(my $output_name = <STDIN>);
+
+`pdftk "$input_pdf" cat $pages output "$output_name.pdf"`;
+
+print "FINISHED. Saved to \"$output_name.pdf\"\n";
