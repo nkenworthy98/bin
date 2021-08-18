@@ -28,16 +28,19 @@ case $ORIGINAL_LINK in
 		;;
 esac
 
+echo -n "$ORIGINAL_LINK" | xclip -selection c
+notify-send "Link has been copied to clipboard. Clipboard will be cleared in 25 seconds."
+
 # notify-send "$1 is now opening in $chosenProgram"
 case $chosenProgram in 
 	mpv)
 		mpv "$ORIGINAL_LINK" ||
-			iformat-mpv.sh "$ORIGINAL_LINK" || \
+			iformat-mpv.sh "$ORIGINAL_LINK" ||
 				notify-send "Error when opening link"
 		;;
 	mpv-invidious)
-		mpv "${ORIGINAL_LINK/https:\/\/www.youtube.com/http:\/\/$INVIDIOUS_SITE}" || \
-			iformat-mpv.sh "$ORIGINAL_LINK" || \
+		mpv "${ORIGINAL_LINK/https:\/\/www.youtube.com/http:\/\/$INVIDIOUS_SITE}" ||
+			iformat-mpv.sh "$ORIGINAL_LINK" ||
 				notify-send "Error when opening link"
 		;;
 	mpv-bitchute)
@@ -47,9 +50,6 @@ case $chosenProgram in
 		curl -o /tmp/sxivtmpfile "$ORIGINAL_LINK" && sxiv -a /tmp/sxivtmpfile
 		;;
 	*)
-		echo -n "$ORIGINAL_LINK" | xclip -selection c
-		notify-send "Link has been copied to clipboard. Clipboard will be cleared in 25 seconds."
-
 		# Convert links to free alternatives
 		convert-links.sh
 
