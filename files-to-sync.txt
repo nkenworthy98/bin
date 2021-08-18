@@ -13,4 +13,4 @@ bin/
 .config/sxhkd/
 .config/irssi/
 .config/ncmpcpp/
-Pictures/
+# Pictures/
