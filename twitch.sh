@@ -12,7 +12,7 @@ channelName=$(echo "$chosen" | awk '{print $1}') # grabs the channel name from t
 if [ "$channelName" != "" ]
 then
 	# mpv https://www.twitch.tv/"$channelName" --ytdl-format=360p
-	streamlink --twitch-disable-ads https://www.twitch.tv/"$channelName" 480p || \
-		streamlink --twitch-disable-ads https://www.twitch.tv/"$channelName" best || \
+	streamlink https://www.twitch.tv/"$channelName" 480p || \
+		streamlink https://www.twitch.tv/"$channelName" best || \
 			notify-send "Error trying to play $channelName through streamlink"
 fi
