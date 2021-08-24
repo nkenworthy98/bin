@@ -4,7 +4,11 @@
 use strict;
 use warnings;
 
-chomp(my $input_pdf = `find Documents -iname "*.pdf" | fzf`);
+# Exclude Backups and .cache directories
+#
+# Need to escape backslashes in "\(" and "\)"
+# The usual shell command doesn't require escaping these
+chomp(my $input_pdf = `find . \\( -path "*/Backups" -o -path "*/\.cache" \\) -prune -o -iname "*.pdf" -print | fzf`);
 
 print "Enter in the page(s) that you want output (See 3 examples below):\n";
 print "\t1\n";
