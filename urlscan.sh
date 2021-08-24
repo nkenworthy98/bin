@@ -29,7 +29,7 @@ case $ORIGINAL_LINK in
 esac
 
 echo -n "$ORIGINAL_LINK" | xclip -selection c
-notify-send "Link has been copied to clipboard. Clipboard will be cleared in 25 seconds."
+notify-send "Link has been copied to clipboard."
 
 # notify-send "$1 is now opening in $chosenProgram"
 case $chosenProgram in 
