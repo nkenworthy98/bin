@@ -18,7 +18,7 @@ NITTER_INSTANCE="nitter.domain.glass"
 
 # /u at the end is required in order to be brought
 # to the correct page
-BIBLIOGRAM_INSTANCE="bibliogram.nixnet.services/u"
+BIBLIOGRAM_INSTANCE="insta.trom.tf/u"
 
 case "$FILTERED_LINK" in
     *"youtube.com"*)
