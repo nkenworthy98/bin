@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # This script allows users to interactively select the format
-# of a video that can be played through mpv (using youtube-dl) by aksing
+# of a video that can be played through mpv (using youtube-dl) by asking
 # the user (through dmenu) which format they would like to watch
 # the video in, and then plays that video using mpv.
 set -euo pipefail
