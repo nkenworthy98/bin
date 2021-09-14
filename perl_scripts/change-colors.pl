@@ -21,11 +21,9 @@ change_dunst_colors($new_color, $path_dunst_conf);
 sub is_hex {
   my $num = shift @_;
 
-  if ($num =~ /\A#[a-fA-F0-9]{6}\z/) {
-    return 1;
-  } else {
-    return 0;
-  }
+  # Returns 1 if passed in value is a valid hexadecimal
+  # Else, returns 0
+  return ($num =~ /\A#[a-fA-F0-9]{6}\z/);
 }
 
 sub change_tmux_colors {
