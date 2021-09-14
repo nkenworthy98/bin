@@ -77,10 +77,10 @@ sub change_dwm_colors {
   }
   close $dwm_out or die "$dwm_out: $!";
 
-  # Compile dwm with changes
+  # Compile and install dwm with changes
   chdir $path;
-  my $make_output = `make`;
-  print $make_output;
+  my $make_install_output = `sudo make install`;
+  print $make_install_output;
 }
 
 sub change_dmenu_colors {
@@ -107,8 +107,8 @@ sub change_dmenu_colors {
   }
   close $dmenu_out or die "$dmenu_out: $!";
 
-  # Compile dmenu with changes
+  # Compile and install dmenu with changes
   chdir $path;
-  my $make_output = `make`;
-  print $make_output;
+  my $make_install_output = `sudo make install`;
+  print $make_install_output;
 }
