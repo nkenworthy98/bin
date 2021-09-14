@@ -3,6 +3,11 @@
 use strict;
 use warnings;
 
+# MAIN_CUSTOM_COLOR environment variable is expected to be
+# set in your shell's rc file in the following format:
+#
+# export MAIN_CUSTOM_COLOR='#235481'
+
 my $new_color = $ENV{'MAIN_CUSTOM_COLOR'};
 my $home = $ENV{'HOME'};
 my $path_tmux_conf = "$home/.tmux.conf";
