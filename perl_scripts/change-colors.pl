@@ -6,6 +6,7 @@ use warnings;
 my $new_color = $ENV{'MAIN_CUSTOM_COLOR'};
 my $home = $ENV{'HOME'};
 my $path_tmux_conf = "$home/.tmux.conf";
+my $path_dunst_conf = "$home/.config/dunst/dunstrc";
 # The paths for the suckless programs expect to have a trailing "/"
 my $path_dwm = "$home/.sucklessPrograms/dwm/";
 my $path_dmenu = "$home/.sucklessPrograms/dmenu/";
@@ -15,6 +16,7 @@ is_hex($new_color) or die "ERROR: $new_color isn't a hexadecimal number";
 change_tmux_colors($new_color, $path_tmux_conf);
 change_dwm_colors($new_color, $path_dwm);
 change_dmenu_colors($new_color, $path_dmenu);
+change_dunst_colors($new_color, $path_dunst_conf);
 
 sub is_hex {
   my $num = shift @_;
@@ -51,6 +53,32 @@ sub change_tmux_colors {
     print $tmux_out $_;
   }
   close $tmux_out or die "$tmux_out: $!";
+}
+
+sub change_dunst_colors {
+  my ($color, $path_conf) = @_;
+  open (my $dunst_in, "<", $path_conf) or die "Can't open $path_conf";
+
+  my @dunst_contents;
+  my $has_changed_first_instance = 0;
+
+  # Substitute only first instance of frame_color. There's another instance that is
+  # found in the urgency section, and I don't want it changed.
+  while (<$dunst_in>) {
+    if (/frame_color = "#[a-fA-F0-9]{6}"/ && !$has_changed_first_instance) {
+      s/#[a-fA-f0-9]{6}/$color/;
+      $has_changed_first_instance = 1;
+    }
+    push(@dunst_contents, $_);
+  }
+  close $dunst_in or die "$dunst_in: $!\n";
+
+  # Write contents back to dunstrc
+  open(my $dunst_out, ">", $path_conf) or die "Can't open $path_conf: $!";
+  foreach (@dunst_contents) {
+    print $dunst_out $_;
+  }
+  close $dunst_out or die "$dunst_out: $!";
 }
 
 sub change_dwm_colors {
