@@ -48,7 +48,7 @@ sub change_tmux_colors {
     }
     push(@tmux_contents, $_);
   }
-  close $tmux_in or die "$tmux_in: $!\n";
+  close $tmux_in or die "$tmux_in: $!";
 
   # Write all the lines to the same file
   open(my $tmux_out, ">", $path_conf) or die "Can't open $path_conf: $!";
@@ -74,7 +74,7 @@ sub change_dunst_colors {
     }
     push(@dunst_contents, $_);
   }
-  close $dunst_in or die "$dunst_in: $!\n";
+  close $dunst_in or die "$dunst_in: $!";
 
   # Write contents back to dunstrc
   open(my $dunst_out, ">", $path_conf) or die "Can't open $path_conf: $!";
