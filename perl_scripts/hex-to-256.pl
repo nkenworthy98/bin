@@ -264,23 +264,8 @@ my @colors_256 = (
 # TODO: implement a way to pass this value in later
 my $original_color = '#8dbf01';
 
-my $min_so_far = hex 0xFFFFFF;
-my $index_of_min;
-my $counter = 0;
-
-foreach my $line (@colors_256) {
-  my $difference = calc_euclidean_distance($original_color, $line);
-  print "Current difference: $difference\n";
-
-  if ($difference < $min_so_far) {
-    $min_so_far = $difference;
-    $index_of_min = $counter;
-  }
-  $counter += 1;
-}
-
-print "Here's the minimum: $min_so_far\n";
-print "Here's the index of min: $index_of_min\n";
+my $closest_256_color = get_closest_256_color($original_color, @colors_256);
+print "$closest_256_color\n";
 
 sub calc_euclidean_distance {
   my ($color1, $color2) = @_;
@@ -305,4 +290,26 @@ sub get_rgb {
   } else {
     die "ERROR: incorrect format for RGB color: $!";
   }
+}
+
+sub get_closest_256_color {
+  my ($hex_color, @colors_256) = @_;
+
+  my $min_so_far = hex 0xFFFFFF;
+  my $counter = 0;
+  my $index_of_min;
+
+  foreach my $line (@colors_256) {
+    my $difference = calc_euclidean_distance($original_color, $line);
+    # print "Current difference: $difference\n";
+
+    if ($difference < $min_so_far) {
+      $min_so_far = $difference;
+      $index_of_min = $counter;
+    }
+    $counter += 1;
+  }
+
+  # The returned index is the closest 256 color code
+  return $index_of_min;
 }
