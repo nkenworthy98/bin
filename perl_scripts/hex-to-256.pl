@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+#
+# Examples on how to use this program:
+#   hex-to-256.pl '#ff3030'
+#   hex-to-256.pl '#660000'
+#   hex-to-256.pl '#d4f42b'
+
 use strict;
 use warnings;
 
