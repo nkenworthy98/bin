@@ -261,10 +261,9 @@ my @colors_256 = (
   '#eeeeee'
 );
 
-# TODO: implement a way to pass this value in later
-my $original_color = '#8dbf01';
+my $original_hex_color = $ARGV[0];
 
-my $closest_256_color = get_closest_256_color($original_color, @colors_256);
+my $closest_256_color = get_closest_256_color($original_hex_color, @colors_256);
 print "$closest_256_color\n";
 
 sub calc_euclidean_distance {
@@ -300,7 +299,7 @@ sub get_closest_256_color {
   my $index_of_min;
 
   foreach my $line (@colors_256) {
-    my $difference = calc_euclidean_distance($original_color, $line);
+    my $difference = calc_euclidean_distance($hex_color, $line);
     # print "Current difference: $difference\n";
 
     if ($difference < $min_so_far) {
