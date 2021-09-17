@@ -28,7 +28,7 @@ sub is_hex {
 
   # Returns 1 if passed in value is a valid hexadecimal
   # Else, returns 0
-  return ($num =~ /\A#[a-fA-F0-9]{6}\z/);
+  return ($num =~ /\A#[0-9a-f]{6}\z/i);
 }
 
 sub change_tmux_colors {
@@ -39,12 +39,12 @@ sub change_tmux_colors {
 
   # Substitute necessary lines to change foreground color of tmux status bar
   while (<$tmux_in>) {
-    if (/set -g pane-active-border-style fg='#[a-fA-F0-9]{6}'/
-        || /set-option -g status-style fg='#[a-fA-F0-9]{6}'/
-        || /set-option -g message-style fg='#[a-fA-F0-9]{6}'/
-        || /set-option -g status-style fg='#[a-fA-f0-9]{6}'/
-        || /set -g status-right "#\[fg=#[a-fA-F0-9]{6}\]%A, %d %b %Y %I:%M %p"/) {
-      s/#[a-fA-f0-9]{6}/$color/;
+    if (/set -g pane-active-border-style fg='#[0-9a-f]{6}'/i
+        || /set-option -g status-style fg='#[0-9a-f]{6}'/i
+        || /set-option -g message-style fg='#[0-9a-f]{6}'/i
+        || /set-option -g status-style fg='#[0-9a-f]{6}'/i
+        || /set -g status-right "#\[fg=#[0-9a-f]{6}\]%A, %d %b %Y %I:%M %p"/i) {
+      s/#[0-9a-f]{6}/$color/i;
     }
     push(@tmux_contents, $_);
   }
@@ -68,8 +68,8 @@ sub change_dunst_colors {
   # Substitute only first instance of frame_color. There's another instance that is
   # found in the urgency section, and I don't want it changed.
   while (<$dunst_in>) {
-    if (/frame_color = "#[a-fA-F0-9]{6}"/ && !$has_changed_first_instance) {
-      s/#[a-fA-f0-9]{6}/$color/;
+    if (/frame_color = "#[0-9a-f]{6}"/i && !$has_changed_first_instance) {
+      s/#[0-9a-f]{6}/$color/i;
       $has_changed_first_instance = 1;
     }
     push(@dunst_contents, $_);
@@ -94,8 +94,8 @@ sub change_dwm_colors {
 
   # Substitute the line with necessary change
   while (<$dwm_in>) {
-    if (/static const char col_cyan\[\]\s+= "#[a-fA-F0-9]{6}";/) {
-      s/#[a-fA-F0-9]{6}/$color/;
+    if (/static const char col_cyan\[\]\s+= "#[0-9a-f]{6}";/i) {
+      s/#[0-9a-f]{6}/$color/i;
     }
     push(@dwm_contents, $_);
   }
@@ -124,8 +124,8 @@ sub change_dmenu_colors {
 
   # Substitute the line with necessary change
   while (<$dmenu_in>) {
-    if (/\[SchemeSel\] = \{ "#ffffff", "(?<select_color>#[a-fA-F0-9]{6})" \}/) {
-      s/$+{select_color}/$color/;
+    if (/\[SchemeSel\] = \{ "#ffffff", "(?<select_color>#[0-9a-f]{6})" \}/i) {
+      s/$+{select_color}/$color/i;
     }
     push(@dmenu_contents, $_);
   }
