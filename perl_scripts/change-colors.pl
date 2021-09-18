@@ -163,8 +163,8 @@ sub change_ncmpcpp_colors {
   my @ncmpcpp_contents;
 
   while (<$ncmpcpp_in>) {
-    if (/\Avisualizer_color = (?<current_visualizer>.*)\Z/) {
-      s/$+{current_visualizer}/$vc_replacement/;
+    if (/\Avisualizer_color = (?<current_colors>.*)\Z/) {
+      s/$+{current_colors}/$vc_replacement/;
     }
     push(@ncmpcpp_contents, $_);
   }
