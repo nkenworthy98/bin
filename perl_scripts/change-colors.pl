@@ -12,6 +12,7 @@ my $new_color = $ENV{'MAIN_CUSTOM_COLOR'};
 my $home = $ENV{'HOME'};
 my $path_tmux_conf = "$home/.tmux.conf";
 my $path_dunst_conf = "$home/.config/dunst/dunstrc";
+my $path_ncmpcpp_conf = "$home/.config/ncmpcpp/config";
 # The paths for the suckless programs expect to have a trailing "/"
 my $path_dwm = "$home/.sucklessPrograms/dwm/";
 my $path_dmenu = "$home/.sucklessPrograms/dmenu/";
@@ -22,6 +23,7 @@ change_tmux_colors($new_color, $path_tmux_conf);
 change_dwm_colors($new_color, $path_dwm);
 change_dmenu_colors($new_color, $path_dmenu);
 change_dunst_colors($new_color, $path_dunst_conf);
+change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
 
 sub is_hex {
   my $num = shift @_;
@@ -142,4 +144,58 @@ sub change_dmenu_colors {
   chdir $path;
   my $make_install_output = `sudo make install`;
   print $make_install_output;
+}
+
+sub change_ncmpcpp_colors {
+  my ($color, $path_conf) = @_;
+  open(my $ncmpcpp_in, "<", $path_conf) or die "Can't open $path_conf: $!";
+
+  # Rather than dealing with codes 0-255, ncmpcpp
+  # deals with 1-256, so 1 needs to be added
+  chomp(my $color_256 = `hex-to-256.pl "$color"`);
+
+  # Don't want colors to go beyond 256,
+  $color_256 = ($color_256 + 1) % 256 ;
+
+  my @visualizer_colors = set_ncmpcpp_visualizer_colors($color_256);
+  my $vc_replacement = join(",", @visualizer_colors);
+
+  my @ncmpcpp_contents;
+
+  while (<$ncmpcpp_in>) {
+    if (/\Avisualizer_color = (?<current_visualizer>.*)\Z/) {
+      s/$+{current_visualizer}/$vc_replacement/;
+    }
+    push(@ncmpcpp_contents, $_);
+  }
+  close $ncmpcpp_in or die "$ncmpcpp_in: $!";
+
+  # Write contents back to ncmpcpp config
+  open(my $ncmpcpp_out, ">", $path_conf) or die "Can't open $path_conf: $!";
+  foreach (@ncmpcpp_contents) {
+    print $ncmpcpp_out $_;
+  }
+  close $ncmpcpp_out or die "$ncmpcpp_out: $!";
+
+}
+
+sub set_ncmpcpp_visualizer_colors {
+  my $color = shift @_;
+
+  my @visualizer_colors;
+  # Make sure passed in color is in the
+  # visualizer_colors list
+  push(@visualizer_colors, $color);
+
+  my $counter = 0;
+  # I want the visualizer to have 10 colors in total
+  # These colors will start at the one returned from hex-to-256.pl
+  # and increment by 1 until there's 10 colors in total
+  while ($counter < 9) {
+    $color = ($color + 1) % 256;
+    push(@visualizer_colors, $color);
+    $counter += 1;
+  }
+
+  return @visualizer_colors;
 }
