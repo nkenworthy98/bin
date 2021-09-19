@@ -1,4 +1,6 @@
 #!/bin/bash
+# Handle links depending on what their url contains or
+# what the file extension is.
 
 ORIGINAL_LINK="$1"
 INVIDIOUS_SITE="invidious.kavin.rocks"

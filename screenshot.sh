@@ -1,4 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+# Script to take screenshots. It asks the user
+# (via dmenu) where the screenshot should be stored,
+# what the name of the screenshot should be, and
+# whether or not it should be fullscreen or a selection.
 set -euo pipefail
 
 # Dependencies for this script:

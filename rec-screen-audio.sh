@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Script to record both the screen and audio.
+# It also asks the user (via dmenu) what the
+# name of the recording should be.
 set -euo pipefail
 
 RECORDING_NAME=$(printf "" | dmenu -p "Name of recording?")
