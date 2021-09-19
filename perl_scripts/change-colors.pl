@@ -17,7 +17,7 @@ my $path_ncmpcpp_conf = "$home/.config/ncmpcpp/config";
 my $path_dwm = "$home/.sucklessPrograms/dwm/";
 my $path_dmenu = "$home/.sucklessPrograms/dmenu/";
 
-is_hex($new_color) or die "ERROR: $new_color isn't a hexadecimal number";
+is_hex_color_code($new_color) or die "ERROR: $new_color isn't a valid hex color code";
 
 change_tmux_colors($new_color, $path_tmux_conf);
 change_dwm_colors($new_color, $path_dwm);
@@ -25,10 +25,10 @@ change_dmenu_colors($new_color, $path_dmenu);
 change_dunst_colors($new_color, $path_dunst_conf);
 change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
 
-sub is_hex {
+sub is_hex_color_code {
   my $num = shift @_;
 
-  # Returns 1 if passed in value is a valid hexadecimal
+  # Returns 1 if passed in value is a valid hex color code
   # Else, returns 0
   return ($num =~ /\A#[0-9a-f]{6}\z/i);
 }

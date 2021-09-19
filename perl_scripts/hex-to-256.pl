@@ -293,7 +293,7 @@ sub get_rgb {
   if ($color =~ /#(?<red>[0-9a-f]{2})(?<green>[0-9a-f]{2})(?<blue>[0-9a-f]{2})/i) {
     return hex $+{red}, hex $+{green}, hex $+{blue};
   } else {
-    die "ERROR: incorrect format for RGB color: $!";
+    die "ERROR: incorrect format for hex color code: $!";
   }
 }
 
