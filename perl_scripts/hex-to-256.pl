@@ -306,7 +306,6 @@ sub get_closest_256_color {
 
   foreach my $line (@colors_256) {
     my $difference = calc_euclidean_distance($hex_color, $line);
-    # print "Current difference: $difference\n";
 
     if ($difference < $min_so_far) {
       $min_so_far = $difference;
