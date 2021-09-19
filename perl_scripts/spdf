@@ -20,6 +20,12 @@ chomp(my $pages = <STDIN>);
 print "Enter in the name of the output pdf (don't include the .pdf at the end)\n";
 chomp(my $output_name = <STDIN>);
 
-`pdftk "$input_pdf" cat $pages output "$output_name.pdf"`;
+`pdftk "$input_pdf" cat $pages output "$output_name.pdf"` or print_error_message();
 
 print "FINISHED. Saved to \"$output_name.pdf\"\n";
+
+sub print_error_message {
+  print "\n";
+  print "====== Make sure you entered in the required information properly! =====\n";
+  die "ERROR: issue creating the output pdf";
+}
