@@ -9,7 +9,7 @@ set -euo pipefail
 LINK=$(xclip -selection c -o)
 
 # Remove www. from all urls in clipboard because it seems
-# to cause issues when accessing frontent site if www. is
+# to cause issues when accessing the alternative sites if www. is
 # still in the url
 FILTERED_LINK=${LINK/www./}
 
