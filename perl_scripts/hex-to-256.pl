@@ -300,7 +300,7 @@ sub get_rgb {
 sub get_closest_256_color {
   my ($hex_color, @colors_256) = @_;
 
-  my $min_so_far = hex 0xFFFFFF;
+  my $min_so_far = hex '0xFFFFFF';
   my $counter = 0;
   my $index_of_min;
 
