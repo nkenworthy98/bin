@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+# Quickly make a search online using your browser of choice.
+#
+# This script has an interactive and a non-interactive version.
+# If you want the interactive version, simply type "s" in your
+# terminal, hit Enter, and you'll be prompted to type in what
+# you want to search for.
+#
+# If you want the non-interactive version type "s" followed
+# by whatever you want to search for.
+# Example:
+#
+#   s perl tutorial
+#
+# This will open your web browser of choice (configured
+# using the $browser variable) with "perl tutorial" as
+# the search query
+use strict;
+use warnings;
+
+# Change $search_base_url to your your favorite search engine's
+# search query url. Make sure that only one of the $search_base_url
+# lines is uncommented.
+#
+# A couple examples:
+#
+# my $search_base_url = "https://duckduckgo.com/?q=";
+# my $search_base_url = "https://searx.info/search?q=";
+
+my $search_base_url = "http://localhost:8888/search?q=";
+my $browser = "w3m";
+my $search_string;
+
+if (@ARGV) {
+  $search_string = join(' ', @ARGV);
+} else {
+  print "Type in what you want to search for:\n";
+  chomp($search_string = <STDIN>);
+}
+
+my $search_query = $search_base_url . $search_string;
+system("$browser", "$search_query");
