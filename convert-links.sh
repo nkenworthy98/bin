@@ -13,8 +13,8 @@ LINK=$(xclip -selection c -o)
 # still in the url
 FILTERED_LINK=${LINK/www./}
 
-INVIDIOUS_INSTANCE="invidious.kavin.rocks"
-NITTER_INSTANCE="nitter.domain.glass"
+INVIDIOUS_INSTANCE=$(grii.sh)
+NITTER_INSTANCE=$(grni.sh)
 
 # /u at the end is required in order to be brought
 # to the correct page
