@@ -65,14 +65,14 @@ sub change_dunst_colors {
   open (my $dunst_in, "<", $path_conf) or die "Can't open $path_conf";
 
   my @dunst_contents;
-  my $has_changed_first_instance = 0;
+  my $is_first_instance = 1;
 
   # Substitute only first instance of frame_color. There's another instance that is
   # found in the urgency section, and I don't want it changed.
   while (<$dunst_in>) {
-    if (/frame_color = "#[0-9a-f]{6}"/i && !$has_changed_first_instance) {
+    if (/frame_color = "#[0-9a-f]{6}"/i && $is_first_instance) {
       s/#[0-9a-f]{6}/$color/i;
-      $has_changed_first_instance = 1;
+      $is_first_instance = 0;
     }
     push(@dunst_contents, $_);
   }
