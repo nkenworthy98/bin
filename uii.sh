@@ -2,4 +2,6 @@
 # Update Invidious Instances
 set -euo pipefail
 
-curl "https://api.invidious.io/instances.json?pretty=1&sort_by=type,users" > txt-files/invidious.json
+JSON_DEST="$HOME/bin/txt-files/invidious.json"
+
+curl "https://api.invidious.io/instances.json?pretty=1&sort_by=type,users" > "$JSON_DEST"

@@ -2,4 +2,6 @@
 # Update Nitter Instances
 set -euo pipefail
 
-curl https://raw.githubusercontent.com/wiki/zedeus/nitter/Instances.md > txt-files/nitter.md
+MD_DEST="$HOME/bin/txt-files/nitter.md"
+
+curl https://raw.githubusercontent.com/wiki/zedeus/nitter/Instances.md > "$MD_DEST"
