@@ -3,7 +3,7 @@
 # what the file extension is.
 
 ORIGINAL_LINK="$1"
-INVIDIOUS_SITE="invidious.kavin.rocks"
+INVIDIOUS_SITE=$(grii.sh)
 
 if [ "$ORIGINAL_LINK" == "" ]; then
 	exit
