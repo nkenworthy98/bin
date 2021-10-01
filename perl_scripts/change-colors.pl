@@ -10,6 +10,7 @@ use warnings;
 
 my $new_color = $ENV{'MAIN_CUSTOM_COLOR'};
 my $home = $ENV{'HOME'};
+my $path_shellrc = "$home/.zshrc";
 my $path_tmux_conf = "$home/.tmux.conf";
 my $path_dunst_conf = "$home/.config/dunst/dunstrc";
 my $path_ncmpcpp_conf = "$home/.config/ncmpcpp/config";
@@ -24,6 +25,7 @@ change_dwm_colors($new_color, $path_dwm);
 change_dmenu_colors($new_color, $path_dmenu);
 change_dunst_colors($new_color, $path_dunst_conf);
 change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
+change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
 
 sub is_hex_color_code {
   my $num = shift @_;
@@ -198,4 +200,60 @@ sub set_ncmpcpp_visualizer_colors {
   }
 
   return @visualizer_colors;
+}
+
+sub change_nnn_colors {
+  my ($color, $path_conf) = @_;
+  open(my $nnn_in, "<", $path_conf) or die "Can't open $path_conf: $!";
+
+  chomp(my $color_256 = `hex-to-256.pl "$color"`);
+
+  my $colors_replacement = set_nnn_colors($color_256);
+  my @nnn_contents;
+
+  while (<$nnn_in>) {
+    if (/\Aexport NNN_COLORS='(?<current_colors>.*)'\Z/) {
+      s/$+{current_colors}/$colors_replacement/;
+    }
+    push(@nnn_contents, $_);
+  }
+  close $nnn_in or die "$nnn_in: $!";
+
+  open(my $nnn_out, ">", $path_conf) or die "Can't open $path_conf: $!";
+  foreach (@nnn_contents) {
+    print $nnn_out $_;
+  }
+  close $nnn_out or die "$nnn_out: $!";
+}
+
+sub set_nnn_colors {
+  my $color = shift @_;
+
+  my @nnn_colors = "#";
+  my $counter = 0;
+  # while counter is < 4 because nnn expects 4 colors for
+  # the 4 contexts that can be used. Also, I want
+  # to increment the colors
+  while ($counter < 4) {
+    # nnn uses hex colors (0x00-0xFF), so
+    # the 256 color needs to be converted
+    my $hex_equivalent = sprintf("%x", $color);
+
+    # According to nnn man page when using the 256 colors,
+    # there must be 2 symbols per context
+    if (length($hex_equivalent) == 1) {
+      $hex_equivalent = "0" . $hex_equivalent;
+    }
+
+    push(@nnn_colors, $hex_equivalent);
+    # Make sure color doesn't go beyond 255
+    $color = ($color + 1) % 256;
+    $counter +=1 ;
+  }
+  # Include default colors at the end in case
+  # the hex colors aren't supported
+  push (@nnn_colors, ";4531");
+  # Convert the array to a string to be returned
+  my $colors_string = join("", @nnn_colors);
+  return $colors_string;
 }
