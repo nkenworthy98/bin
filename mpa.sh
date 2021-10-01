@@ -9,5 +9,4 @@ mpc clear
 # I need to avoid adding all filepaths containing
 # ".git" in them, so I don't have any duplicate songs
 # in the queue.
-NUMBER_OF_SONGS=$(mpc listall | grep -v "\.git" | wc -l)
-mpc listall | grep -v "\.git" | ashuffle -q "$NUMBER_OF_SONGS" -f -
+mpc listall | grep -v "\.git" | ashuffle -q 100 -f -
