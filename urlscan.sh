@@ -33,8 +33,7 @@ esac
 echo -n "$ORIGINAL_LINK" | xclip -selection c
 notify-send "Link has been copied to clipboard."
 
-# notify-send "$1 is now opening in $chosenProgram"
-case $chosenProgram in 
+case $chosenProgram in
 	mpv)
 		mpv "$ORIGINAL_LINK" ||
 			iformat-mpv.sh "$ORIGINAL_LINK" ||
