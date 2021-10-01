@@ -54,7 +54,8 @@ case $chosenProgram in
 		# Convert links to free alternatives
 		convert-links.sh
 
+		# Uses my script xcc.sh to clear clipboard
 		sleep 25;
-		xclip -i /dev/null -selection c
+		xcc.sh
 		;;
 esac
