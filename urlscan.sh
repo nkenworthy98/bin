@@ -40,7 +40,7 @@ case $chosenProgram in
 				notify-send "Error when opening link"
 		;;
 	mpv-invidious)
-		mpv "${ORIGINAL_LINK/https:\/\/www.youtube.com/http:\/\/$INVIDIOUS_SITE}" ||
+		mpv "${ORIGINAL_LINK/https:\/\/www.youtube.com/https:\/\/$INVIDIOUS_SITE}" ||
 			iformat-mpv.sh "$ORIGINAL_LINK" ||
 				notify-send "Error when opening link"
 		;;
