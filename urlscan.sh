@@ -44,9 +44,6 @@ case $chosenProgram in
 			iformat-mpv.sh "$ORIGINAL_LINK" ||
 				notify-send "Error when opening link"
 		;;
-	mpv-bitchute)
-		mpv "$ORIGINAL_LINK" || notify-send "Error when opening link"
-		;;
 	sxiv)
 		curl -o /tmp/sxivtmpfile "$ORIGINAL_LINK" && sxiv -a /tmp/sxivtmpfile
 		;;
