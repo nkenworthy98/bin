@@ -248,11 +248,11 @@ sub set_nnn_colors {
     push(@nnn_colors, $hex_equivalent);
     # Make sure color doesn't go beyond 255
     $color = ($color + 1) % 256;
-    $counter +=1 ;
+    $counter += 1 ;
   }
   # Include default colors at the end in case
   # the hex colors aren't supported
-  push (@nnn_colors, ";4531");
+  push(@nnn_colors, ";4531");
   # Convert the array to a string to be returned
   my $colors_string = join("", @nnn_colors);
   return $colors_string;
