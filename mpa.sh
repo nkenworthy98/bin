@@ -1,6 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Start playing all my music in a random order
-set -euo pipefail
 
 # Clear queue
 mpc clear
