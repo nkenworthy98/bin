@@ -1,9 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Get Random Invidious Instance
 #
 # Make sure to run uii.sh before running this in order to grab
 # latest invidious instances data
-set -euo pipefail
 
 INVIDIOUS_JSON_PATH="$HOME/bin/txt-files/invidious.json"
 
