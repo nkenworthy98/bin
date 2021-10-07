@@ -51,7 +51,3 @@ elsif ($link =~ /instagram.com/) {
   $notification_msg = "Instagram link converted to Bibliogram link";
   `notify-send -h string:frcolor:#833BB4 "$notification_msg"`;
 }
-
-else {
-  `notify-send "Link in clipboard was not converted"`;
-}
