@@ -1,9 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Get Random Nitter Instance
 #
 # Make sure to run uni.sh to get
 # latest nitter.md
-set -euo pipefail
 
 NITTER_INSTANCES_PATH="$HOME/bin/txt-files/nitter.md"
 
