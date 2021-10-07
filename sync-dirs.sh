@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
 
 # This is the text file containing all the directories that should be synced
 FILES_TO_SYNC="$1"
