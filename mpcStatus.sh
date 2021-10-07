@@ -1,4 +1,4 @@
-#!/bin/bash
-# Script to display mpc status information through dunst
+#!/bin/sh
+# Script to display mpc status information as a notification
 
 notify-send "$(mpc status)"
