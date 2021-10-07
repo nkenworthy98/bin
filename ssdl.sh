@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
 # This script recursively downloads a static site
 #
 # EXAMPLES:
