@@ -1,6 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Clear clipboard contents
-set -euo pipefail
 
 xclip -i /dev/null -selection primary
 xclip -i /dev/null -selection secondary
