@@ -1,6 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Update Invidious Instances
-set -euo pipefail
 
 JSON_DEST="$HOME/bin/txt-files/invidious.json"
 

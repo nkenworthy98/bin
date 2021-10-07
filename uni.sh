@@ -1,6 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Update Nitter Instances
-set -euo pipefail
 
 MD_DEST="$HOME/bin/txt-files/nitter.md"
 
