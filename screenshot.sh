@@ -1,16 +1,15 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Script to take screenshots. It asks the user
 # (via dmenu) where the screenshot should be stored,
 # what the name of the screenshot should be, and
 # whether or not it should be fullscreen or a selection.
-set -euo pipefail
 
 # Dependencies for this script:
 #   find, dmenu, echo, maim/scrot, mv, dunst (for notify-send)
 
 # List all directories inside screenshots for senior year.
 # Pipe those into dmenu and have user choose which location they would like the screenshot saved.
-SAVE_LOCATION=$(find $HOME/Pictures/Screenshots/seniorYear/ -type d | dmenu -i -l 5 -p "Screenshot Location?")
+SAVE_LOCATION=$(find "$HOME/Pictures/Screenshots/" -type d | dmenu -i -l 5 -p "Screenshot Location?")
 
 # Ask user what name they would like for the screenshot.
 # Needed printf in order to allow user to type their own name in dmenu. Not sure if there's a more efficient workaround.
@@ -19,7 +18,7 @@ NAME_OF_SCREENSHOT=$(printf "" | dmenu -p "Name of Screenshot?")
 GET_CHOICE=$(printf "full\nselection" | dmenu -p "Screenshot Type")
 
 # Take a screenshot 1 second after person enters name.
-if [ $GET_CHOICE = "full" ]
+if [ "$GET_CHOICE" = "full" ]
 then 
 	maim -d 1 > "$SAVE_LOCATION"/"$NAME_OF_SCREENSHOT" 
 	# scrot -d 1 "$NAME_OF_SCREENSHOT"
