@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
 # This script copies a specified directory,
 # converts all flac files to opus, and then removes
 # the copied flac files
