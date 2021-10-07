@@ -1,9 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # This script allows users to interactively select the format
 # of a video that can be played through mpv (using youtube-dl) by asking
 # the user (through dmenu) which format they would like to watch
 # the video in, and then plays that video using mpv.
-set -euo pipefail
 
 # Sends the format code and resolution to dmenu
 FORMAT_LIST=$(youtube-dl -F "$1" | ytdl-formats.pl | perl -lane 'print "$F[0] -- $F[2]"')
