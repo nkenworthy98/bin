@@ -24,29 +24,29 @@ my $bibliogram_instance = "insta.trom.tf/u";
 
 my $notification_msg;
 
-if ($link =~ /youtube.com/) {
-  $link =~ s/youtube.com/$invidious_instance/;
+if ($link =~ /youtube\.com/) {
+  $link =~ s/youtube\.com/$invidious_instance/;
   system("printf '$link' | xclip -selection c");
   $notification_msg = "YouTube link converted to Invidious link";
   `notify-send -h string:frcolor:#FA0000 "$notification_msg"`;
 }
 
-elsif ($link =~ /twitter.com/) {
-  $link =~ s/twitter.com/$nitter_instance/;
+elsif ($link =~ /twitter\.com/) {
+  $link =~ s/twitter\.com/$nitter_instance/;
   system("printf '$link' | xclip -selection c");
   $notification_msg = "Twitter link converted to Nitter link";
   `notify-send -h string:frcolor:#FAFAFA "$notification_msg"`;
 }
 
-elsif ($link =~ /reddit.com/) {
-  $link =~ s/reddit.com/teddit.net/;
+elsif ($link =~ /reddit\.com/) {
+  $link =~ s/reddit\.com/teddit.net/;
   system("printf '$link' | xclip -selection c");
   $notification_msg = "Reddit link converted to Teddit link";
   `notify-send -h string:frcolor:#FF4500 "$notification_msg"`;
 }
 
-elsif ($link =~ /instagram.com/) {
-  $link =~ s/instagram.com/$bibliogram_instance/;
+elsif ($link =~ /instagram\.com/) {
+  $link =~ s/instagram\.com/$bibliogram_instance/;
   system("printf '$link' | xclip -selection c");
   $notification_msg = "Instagram link converted to Bibliogram link";
   `notify-send -h string:frcolor:#833BB4 "$notification_msg"`;
