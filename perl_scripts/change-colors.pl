@@ -128,8 +128,8 @@ sub change_dmenu_colors {
 
   # Substitute the line with necessary change
   while (<$dmenu_in>) {
-    if (/\[SchemeSel\] = \{ "#ffffff", "(?<select_color>#[0-9a-f]{6})" \}/i) {
-      s/$+{select_color}/$color/i;
+    if (/\[SchemeSel\] = \{ "#ffffff", "(?<previous_color>#[0-9a-f]{6})" \}/i) {
+      s/$+{previous_color}/$color/i;
     }
     push(@dmenu_contents, $_);
   }
@@ -165,22 +165,22 @@ sub change_ncmpcpp_colors {
   my @ncmpcpp_contents;
 
   while (<$ncmpcpp_in>) {
-    if (/\Avisualizer_color = (?<current_colors>.*)\Z/) {
-      s/$+{current_colors}/$vc_replacement/;
+    if (/\Avisualizer_color = (?<previous_colors>.*)\Z/) {
+      s/$+{previous_colors}/$vc_replacement/;
     }
 
     # Replace colors of various UI elements. See the comments below for
     # example lines that will match with the regular expressions
     #
     # main_window_color = 39
-    elsif (/\Amain_window_color = (?<old_color>.*)\Z/
+    elsif (/\Amain_window_color = (?<previous_color>.*)\Z/
            # song_columns_list_format = (20)[17]{a} (6f)[green]{NE} (50)[white]{t|f:Title} (20)[cyan]{b} (7f)[magenta]{l}
-           || /\Asong_columns_list_format = \(20\)\[(?<old_color>.*)\]\{a\}/
+           || /\Asong_columns_list_format = \(20\)\[(?<previous_color>.*)\]\{a\}/
            # current_item_prefix = $(177)$r
-           || /\Acurrent_item_prefix = \$(?<old_color>.*)\$r\Z/
+           || /\Acurrent_item_prefix = \$(?<previous_color>.*)\$r\Z/
            # alternative_header_second_line_format = {{$(11)$b%a$/b$9}{ - $7%b$9}{ ($5%y$9)}}|{%D}
-           || /\Aalternative_header_second_line_format = \{\{\$\((?<old_color>\d+)\)\$/) { # Assumes old_color is inside parentheses in ncmpcpp config and is a number
-      s/$+{old_color}/$color_256/;
+           || /\Aalternative_header_second_line_format = \{\{\$\((?<previous_color>\d+)\)\$/) { # Assumes previous_color is inside parentheses in ncmpcpp config and is a number
+      s/$+{previous_color}/$color_256/;
     }
     push(@ncmpcpp_contents, $_);
   }
@@ -226,8 +226,8 @@ sub change_nnn_colors {
   my @nnn_contents;
 
   while (<$nnn_in>) {
-    if (/\Aexport NNN_COLORS='(?<current_colors>.*)'\Z/) {
-      s/$+{current_colors}/$colors_replacement/;
+    if (/\Aexport NNN_COLORS='(?<previous_colors>.*)'\Z/) {
+      s/$+{previous_colors}/$colors_replacement/;
     }
     push(@nnn_contents, $_);
   }
