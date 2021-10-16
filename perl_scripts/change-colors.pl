@@ -168,6 +168,20 @@ sub change_ncmpcpp_colors {
     if (/\Avisualizer_color = (?<current_colors>.*)\Z/) {
       s/$+{current_colors}/$vc_replacement/;
     }
+
+    # Replace colors of various UI elements. See the comments below for
+    # example lines that will match with the regular expressions
+    #
+    # main_window_color = 39
+    elsif (/\Amain_window_color = (?<old_color>.*)\Z/
+           # song_columns_list_format = (20)[17]{a} (6f)[green]{NE} (50)[white]{t|f:Title} (20)[cyan]{b} (7f)[magenta]{l}
+           || /\Asong_columns_list_format = \(20\)\[(?<old_color>.*)\]\{a\}/
+           # current_item_prefix = $(177)$r
+           || /\Acurrent_item_prefix = \$(?<old_color>.*)\$r\Z/
+           # alternative_header_second_line_format = {{$(11)$b%a$/b$9}{ - $7%b$9}{ ($5%y$9)}}|{%D}
+           || /\Aalternative_header_second_line_format = \{\{\$\((?<old_color>\d+)\)\$/) { # Assumes old_color is inside parentheses in ncmpcpp config and is a number
+      s/$+{old_color}/$color_256/;
+    }
     push(@ncmpcpp_contents, $_);
   }
   close $ncmpcpp_in or die "$ncmpcpp_in: $!";
