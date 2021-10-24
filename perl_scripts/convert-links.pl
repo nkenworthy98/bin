@@ -40,6 +40,8 @@ elsif ($link =~ /twitter\.com/) {
 
 elsif ($link =~ /reddit\.com/) {
   $link =~ s/reddit\.com/teddit.net/;
+  # Use teddit's dark theme
+  $link = $link . "?theme=dark";
   system("printf '$link' | xclip -selection c");
   $notification_msg = "Reddit link converted to Teddit link";
   `notify-send -h string:frcolor:#FF4500 "$notification_msg"`;

@@ -18,8 +18,8 @@ if [ "$SITE_CHOICE" = "nitter" ]; then
 elif [ "$SITE_CHOICE" = "teddit" ]; then
     TEDDIT_SUBREDDIT=$(printf "" | dmenu -p "Teddit Subreddit?")
 
-    # Format URL to look like https://teddit.net/r/subreddit
-    GOTO_URL=$(printf "https://%s/r/%s" "$TEDDIT_BASE_URL" "$TEDDIT_SUBREDDIT")
+    # Format URL to look like https://teddit.net/r/subreddit?theme=dark
+    GOTO_URL=$(printf "https://%s/r/%s?theme=dark" "$TEDDIT_BASE_URL" "$TEDDIT_SUBREDDIT")
     "$BROWSER" "$GOTO_URL"
 fi
 
