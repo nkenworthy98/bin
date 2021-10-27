@@ -1,0 +1,15 @@
+#!/bin/sh
+# tmux attach
+#
+# List tmux sessions and attach to the one the user specifies
+
+SESSION_LIST=$(tmux ls | cut -d":" -f 1)
+NUM_OF_SESSIONS=$(echo "$SESSION_LIST" | wc -l)
+
+# No need to have user select if there's less than or equal to 1 sessions running
+if [ "$NUM_OF_SESSIONS" -le 1 ]; then
+    tmux attach -t "$SESSION_LIST"
+else
+    tmux attach -t "$(echo "$SESSION_LIST" | fzf)"
+fi
+
