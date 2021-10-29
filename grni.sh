@@ -8,4 +8,4 @@ NITTER_INSTANCES_PATH="$HOME/bin/txt-files/nitter.md"
 
 # This assumes the nitter link comes before the Unicode check box,
 # which shows if an instance is updated.
-perl -ne 'if (/https:\/\/(?<link>[\w\.]+).*✅/){print "$+{link}\n";}' "$NITTER_INSTANCES_PATH" | shuf -n 1
+perl -ne 'if (/https:\/\/(?<link>[\w\.-]+).*✅/){print "$+{link}\n";}' "$NITTER_INSTANCES_PATH" | shuf -n 1
