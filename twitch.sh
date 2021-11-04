@@ -1,12 +1,23 @@
 #!/bin/sh
-# Script to choose twitch stream through dmenu
+# Script to choose twitch stream to watch through dmenu
 
-CHOICES=$(reflex-curses -f)
-CHANNEL_NAME=$(echo "$CHOICES" | dmenu -l 20 -i -p "Twitch Stream?") # displays channel name in dmenu
+CHANNEL_LIST=$(reflex-curses -f)
+# Use dmenu to ask user to select a channel to watch
+SELECTED_CHANNEL=$(echo "$CHANNEL_LIST" | dmenu -l 20 -i -p "Twitch Stream?")
 
-if [ "$CHANNEL_NAME" != "" ]
-then
-	streamlink https://www.twitch.tv/"$CHANNEL_NAME" 480p || \
-		streamlink https://www.twitch.tv/"$CHANNEL_NAME" best || \
-			notify-send "Error trying to play $CHANNEL_NAME through streamlink"
-fi
+play_stream() {
+	CHANNEL=$1
+
+	# Don't even attempt to run streamlink if a channel isn't selected
+	if [ "$CHANNEL" != "" ]; then
+		streamlink https://www.twitch.tv/"$CHANNEL" || print_error "$CHANNEL"
+	fi
+}
+
+print_error() {
+	CHANNEL=$1
+
+	notify-send 'twitch.sh' "Error trying to play $CHANNEL through streamlink"
+}
+
+play_stream "$SELECTED_CHANNEL"
