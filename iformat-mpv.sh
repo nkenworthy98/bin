@@ -1,11 +1,11 @@
 #!/bin/sh
 # This script allows users to interactively select the format
-# of a video that can be played through mpv (using youtube-dl) by asking
+# of a video that can be played through mpv (using yt-dlp) by asking
 # the user (through dmenu) which format they would like to watch
 # the video in, and then plays that video using mpv.
 
 # Sends the format code and resolution to dmenu
-FORMAT_LIST=$(youtube-dl -F "$1" | ytdl-formats.pl | perl -lane 'print "$F[0] -- $F[2]"')
+FORMAT_LIST=$(yt-dlp -F "$1" | ytdl-formats.pl | perl -lane 'print "$F[0] -- $F[2]"')
 USER_CHOICE=$(echo "$FORMAT_LIST" | dmenu -l 10 -i -p "Pick format: (Format Code -- Resolution)")
 
 # Gets the format code based on the users's choice
