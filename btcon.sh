@@ -2,6 +2,7 @@
 # Toggle bluetooth connection
 #
 # Configure the BT_MAC_ADDRESS variable with your bluetooth device's MAC address
+# Assume connect unless --disconnect is passed in
 
 toggle_btcon_on() {
     BT_DEVICE="$1"
@@ -41,11 +42,7 @@ print_error_message() {
 
 BT_MAC_ADDRESS=""
 
-# This will equal 1 if a device is connected
-# I only ever have 1 bluetooth device connected
-IS_CONNECTED=$(bluetoothctl info | grep -c "Connected: yes")
-
-if [ "$IS_CONNECTED" -eq 1 ]; then
+if [ "$1" = "--disconnect" ]; then
     toggle_btcon_off "$BT_MAC_ADDRESS"
 else
     toggle_btcon_on "$BT_MAC_ADDRESS"
