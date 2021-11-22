@@ -1,5 +1,9 @@
 #!/usr/bin/perl
-# Quickly navigate to nitter/teddit pages using dmenu
+# Quickly navigate to various sites using dmenu
+# The following sites are supported:
+#   nitter
+#   teddit
+#   archwiki
 #
 # When dmenu asks you to enter in a username or subreddit, you can enter in
 # multiple usernames/subreddits (separated by spaces) and have them open up
@@ -12,6 +16,7 @@ my $browser = 'firefox';
 my @sites_list = (
   'nitter',
   'teddit',
+  'archwiki',
 );
 
 my $site_choice = ask_user_for_site(@sites_list);
@@ -19,9 +24,11 @@ my $site_choice = ask_user_for_site(@sites_list);
 if ($site_choice eq 'nitter') {
   open_nitter_pages();
 }
-# Using elsif in case I want to add more sites in the future
 elsif ($site_choice eq 'teddit') {
   open_teddit_pages();
+}
+elsif ($site_choice eq 'archwiki') {
+  open_archwiki_pages();
 }
 
 sub ask_user_for_site {
@@ -91,4 +98,52 @@ sub open_teddit_pages {
 
 sub open_teddit_homepage {
   exec("$browser", "https://teddit.net?theme=dark");
+}
+
+sub open_archwiki_pages {
+  my $archwiki_string = `printf '' | dmenu -p 'ArchWiki Page(s)? (Type ! at beginning for search)'`;
+  chomp($archwiki_string);
+
+  my @archwiki_urls;
+
+  if (is_archwiki_search($archwiki_string)) {
+    open_archwiki_search_page($archwiki_string);
+  } else {
+    open_archwiki_title_pages($archwiki_string);
+  }
+}
+
+sub is_archwiki_search {
+  my ($archwiki_string) = @_;
+
+  return ($archwiki_string =~ /\A!/);
+}
+
+sub open_archwiki_search_page {
+  my ($archwiki_string) = @_;
+
+  # Get rid of the '!' in the search query
+  $archwiki_string =~ s/\A!//;
+  # Replace all spaces with '+', so they can be used in the url
+  $archwiki_string =~ s/ /+/g;
+
+  my $url = "https://wiki.archlinux.org/index.php?search=$archwiki_string&title=Special%3ASearch&fulltext=1";
+
+  exec("$browser", $url);
+}
+
+sub open_archwiki_title_pages {
+  my ($archwiki_string) = @_;
+
+  my @archwiki_pages = split(' ', $archwiki_string);
+  my $url;
+  my @archwiki_urls;
+
+  foreach my $page (@archwiki_pages) {
+    $url = "https://wiki.archlinux.org/title/$page";
+
+    push(@archwiki_urls, $url);
+  }
+
+  exec("$browser", @archwiki_urls);
 }
