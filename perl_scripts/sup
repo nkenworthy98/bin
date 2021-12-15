@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+# Searx up
+# Pull down latest searx image and start it up
+# If an instance is already running, this will stop it and start a new one
+use strict;
+use warnings;
+
+my $searx_dir = "$ENV{'HOME'}/.otherPrograms/searx-docker";
+my $port = 8888;
+
+my $container_name = get_container_name();
+
+# Don't attempt to stop container if searx image isn't already running
+if ($container_name) {
+  system("sudo docker stop $container_name");
+}
+chdir($searx_dir) or die "Error: can't cd into $searx_dir";
+system("sudo docker pull searx/searx");
+exec("sudo docker run --rm -d -v $searx_dir/searx:/etc/searx -p $port:8080 -e BASE_URL=http://localhost:$port/ searx/searx");
+
+sub get_container_name {
+  my @docker_ps_output = `sudo docker ps`;
+
+  foreach my $line (@docker_ps_output) {
+    # Check for the line that uses the 'searx/searx' image and extract the
+    # container name
+    if ($line =~ /searx\/searx/ && $line =~ /(?<container_name>[a-z]+_[a-z]+\Z)/) {
+      return $+{container_name};
+    }
+  }
+}
