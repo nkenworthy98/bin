@@ -22,34 +22,42 @@ chomp(my $nitter_instance = `grni.sh`);
 # /u at the end is required in order to be brought to the correct page
 my $bibliogram_instance = "insta.trom.tf/u";
 
-my $notification_msg;
-
 if ($link =~ /youtube\.com/) {
   $link =~ s/youtube\.com/$invidious_instance/;
-  system("printf '$link' | xclip -selection c");
-  $notification_msg = "YouTube link converted to Invidious link";
-  `notify-send -h string:frcolor:#FA0000 "$notification_msg"`;
+  show_notification('YouTube', 'Invidious', '#FA0000');
 }
 
 elsif ($link =~ /twitter\.com/) {
   $link =~ s/twitter\.com/$nitter_instance/;
-  system("printf '$link' | xclip -selection c");
-  $notification_msg = "Twitter link converted to Nitter link";
-  `notify-send -h string:frcolor:#FAFAFA "$notification_msg"`;
+  show_notification('Twitter', 'Nitter', '#FAFAFA');
 }
 
 elsif ($link =~ /reddit\.com/) {
-  $link =~ s/reddit\.com/teddit.net/;
+  $link =~ s/reddit\.com/teddit\.net/;
   # Use teddit's dark theme
   $link = $link . "?theme=dark";
-  system("printf '$link' | xclip -selection c");
-  $notification_msg = "Reddit link converted to Teddit link";
-  `notify-send -h string:frcolor:#FF4500 "$notification_msg"`;
+  show_notification('Reddit', 'Teddit', '#FF4500');
 }
 
 elsif ($link =~ /instagram\.com/) {
   $link =~ s/instagram\.com/$bibliogram_instance/;
-  system("printf '$link' | xclip -selection c");
-  $notification_msg = "Instagram link converted to Bibliogram link";
-  `notify-send -h string:frcolor:#833BB4 "$notification_msg"`;
+  show_notification('Instagram', 'Bibliogram', '#833BB4');
+}
+
+send_link_to_clipboard($link);
+
+sub show_notification {
+  my ($original_site, $new_site, $color_code) = @_;
+
+  my $message = "$original_site link converted to $new_site link";
+  `notify-send -h string:frcolor:"$color_code" "$message"`;
+}
+
+sub send_link_to_clipboard {
+  my ($link) = @_;
+
+  open(my $clipboard, "|-", "xclip -selection c")
+      or die "Error opening clipboard $!";
+  print $clipboard $link;
+  close($clipboard) or die "Error closing $clipboard $!";
 }
