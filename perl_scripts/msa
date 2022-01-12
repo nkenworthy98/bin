@@ -26,11 +26,11 @@ if ($re) {
   if (my @arr = $re_no_char_classes =~ /(?<tmp_query>[a-zA-Z]+)/g) {
     # print "search_query: $+{tmp_query}\n";
     $search_query = $+{tmp_query};
-    print "Everything in Array:\n";
-    print map { $_, "\n" } @arr;
+    # print "Everything in Array:\n";
+    # print map { $_, "\n" } @arr;
 
     my $longest_str = maxstr(@arr);
-    print "Longest string: $longest_str\n";
+    # print "Longest string: $longest_str\n";
   }
   else {
     die "Your regex must contain a-z or A-Z";
