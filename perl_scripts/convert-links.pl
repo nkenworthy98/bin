@@ -46,6 +46,10 @@ elsif ($link =~ /instagram\.com/) {
 
 send_link_to_clipboard($link);
 
+if ($link =~ /\Ahttps?:/ && `pidof firefox`) {
+  system("firefox $link");
+}
+
 sub show_notification {
   my ($original_site, $new_site, $color_code) = @_;
 
