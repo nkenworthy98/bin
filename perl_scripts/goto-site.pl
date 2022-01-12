@@ -4,6 +4,7 @@
 #   nitter
 #   teddit
 #   archwiki
+#   searx
 #
 # When dmenu asks you to enter in a username or subreddit, you can enter in
 # multiple usernames/subreddits (separated by spaces) and have them open up
@@ -17,6 +18,7 @@ my @sites_list = (
   'nitter',
   'teddit',
   'archwiki',
+  'searx',
 );
 
 my $site_choice = ask_user_for_site(@sites_list);
@@ -29,6 +31,9 @@ elsif ($site_choice eq 'teddit') {
 }
 elsif ($site_choice eq 'archwiki') {
   open_archwiki_pages();
+}
+elsif ($site_choice eq 'searx') {
+  open_searx_pages();
 }
 
 sub ask_user_for_site {
@@ -140,10 +145,26 @@ sub open_archwiki_title_pages {
   my @archwiki_urls;
 
   foreach my $page (@archwiki_pages) {
-    $url = "https://wiki.archlinux.org/title/$page";
+    $url = "https://wiki.archlinux.org/title/$page?useskinversion=1";
 
     push(@archwiki_urls, $url);
   }
 
   exec("$browser", @archwiki_urls);
+}
+
+sub open_searx_pages {
+  my $searx_string = `dmenu -p 'Searx queries? (Separate searches with '!')'`;
+
+  $searx_string =~ s/ /+/g;
+  my @searxes = split('!', $searx_string);
+
+  my @urls_searx = ();
+  foreach my $search_query (@searxes) {
+    my $url = "http://localhost:8888/search?q=$search_query";
+
+    push(@urls_searx, $url);
+  }
+
+  exec("$browser", @urls_searx);
 }
