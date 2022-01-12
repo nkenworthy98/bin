@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 my $original_link = $ARGV[0] or die "Must pass in a link: $!";
-chomp(my $invidious_instance = `grii.sh`);
 
 if (is_sxiv_link($original_link)) {
   system("notify-send 'Opening link in sxiv...'");
@@ -15,23 +14,10 @@ if (is_sxiv_link($original_link)) {
 elsif (is_mpv_link($original_link)) {
   system("notify-send 'Opening link in mpv...'");
   if ($original_link =~ /youtube\.com/) {
-    # Don't subtitute original link variable, so it can be used if the
-    # invidious link doesn't work
-    my $invidious_link = $original_link;
-    $invidious_link =~ s/youtube\.com/$invidious_instance/;
-
-    # Need to escape the backslash. If you don't, perl will say there's
-    # an error of some sort. Shell script would only require 1 "\" to
-    # continue commands on the next line
-    system("mpv '$invidious_link' \\
-            || iformat-mpv.sh '$original_link' \\
-            || notify-send 'Error when opening link'");
+    system("play-yt.pl '$original_link'");
   }
-
   else {
-    system("mpv '$original_link' \\
-            || iformat-mpv.sh '$original_link' \\
-            || notify-send 'Error when opening link'");
+    system("mpv '$original_link'");
   }
 }
 
