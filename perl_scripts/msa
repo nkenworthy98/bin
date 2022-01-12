@@ -1,0 +1,52 @@
+#!/usr/bin/perl
+# mpc search any
+use strict;
+use warnings;
+use Getopt::Long qw(GetOptions);
+use List::Util qw(maxstr);
+
+my $search_query;
+my $search_type = 'any';
+my $use_filename = 0;
+my $re = '';
+
+GetOptions('f' => \$use_filename,
+           're=s' => \$re);
+
+$search_type = 'filename' if $use_filename;
+
+# TODO: Rename some of the variables, cleanup, and separate into own function
+# if ($re =~ s/(?<tmp_query>[a-z]+)\Z//) {
+# if ($re =~ /(?<tmp_query>[a-z]+)/) {
+if ($re) {
+  my $re_no_char_classes = $re;
+  $re_no_char_classes =~ s/\\[a-zA-Z]/ /g;
+  # print "re: $re\n";
+  # print "re no char class: $re_no_char_classes\n";
+  if (my @arr = $re_no_char_classes =~ /(?<tmp_query>[a-zA-Z]+)/g) {
+    # print "search_query: $+{tmp_query}\n";
+    $search_query = $+{tmp_query};
+    print "Everything in Array:\n";
+    print map { $_, "\n" } @arr;
+
+    my $longest_str = maxstr(@arr);
+    print "Longest string: $longest_str\n";
+  }
+  else {
+    die "Your regex must contain a-z or A-Z";
+  }
+  print grep { ! /\.git\// && /$re/i } `mpc search $search_type '$search_query'`;
+  exit;
+}
+
+if (@ARGV) {
+  $search_query = join(' ', @ARGV);
+}
+else {
+  printf STDERR "MPC Search %s?\n", ucfirst $search_type;
+  chomp($search_query = <STDIN>);
+}
+
+if ($search_query) {
+  print grep { ! /\.git\// } `mpc search $search_type '$search_query'`;
+}
