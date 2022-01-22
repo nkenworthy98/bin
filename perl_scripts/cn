@@ -1,35 +1,56 @@
 #!/usr/bin/perl
 # Convert numbers
 #
-# This will convert decimal numbers (base 10) to hexadecimal (base 16)
-# or hexadecimal numbers to decimal
+# This will convert decimal numbers (base 10) to hexadecimal (base 16) or
+# hexadecimal numbers to decimal
 use strict;
 use warnings;
+use Getopt::Long qw(GetOptions HelpMessage);
+use Getopt::Long qw(:config bundling);
 
-my $number = $ARGV[0];
+# CLI Flags/Variables
+my $use_big_endian = 0;
+my $use_little_endian = 0;
+my $verbose = 0;
+my $delimiter = ' => ';
 
-unless ($number =~ /\A(0x|x)[0-9a-f]+\Z|\A[0-9]+\Z/i) {
-  die "You didn't enter a valid number";
+GetOptions(
+  'big-endian|b' => \$use_big_endian,
+  'little-endian|l' => \$use_little_endian,
+  'verbose|v' => \$verbose,
+  'delimiter|d=s' => \&set_verbose_and_delimiter,
+  'help|h' => sub { HelpMessage(0) },
+) or HelpMessage(1);
+
+if ($use_big_endian && $use_little_endian) {
+  die "ERROR: cannot pass both --big-endian (-b) and --little-endian (-l)";
 }
 
-if (is_hex_number($number)) {
-  printf "Decimal Equivalent: %d\n", hex $number;
+my @valid_numbers = ();
+
+foreach my $value (@ARGV) {
+  if (is_valid_number($value)) {
+    push(@valid_numbers, $value);
+  }
+  else {
+    warn "'$value' is not a valid number $!";
+  }
+}
+
+
+if ($verbose) {
+  # Print results prepended by the original number and delimiter
+  print map { $_ . $delimiter . convert_number($_), "\n" } @valid_numbers;
 }
 else {
-  my $hex_equiv = sprintf "%X", $number;
+  # Print each converted number followed by a newline
+  print map { convert_number($_), "\n" } @valid_numbers;
+}
 
-  # Prepend a '0' if $hex_equiv string has an odd number of characters
-  if (length($hex_equiv) % 2 == 1) {
-    $hex_equiv = "0$hex_equiv"
-  }
+sub is_valid_number {
+  my ($value) = @_;
 
-  my @byte_array = unpack("(A2)*", $hex_equiv);
-  my $big_endian = join(' ', @byte_array);
-  my $little_endian = join(' ', reverse @byte_array);
-
-  print "Hex Equivalent:\t0x$hex_equiv\n";
-  print "Big Endian:\t$big_endian\n";
-  print "Little Endian:\t$little_endian\n";
+  return ($value =~ /\A(0x|x)[0-9a-f]+\Z|\A[0-9]+\Z/i)
 }
 
 sub is_hex_number {
@@ -37,3 +58,59 @@ sub is_hex_number {
 
   return ($value =~ /\A(0x|x)[0-9a-f]+\Z/i);
 }
+
+sub convert_number {
+  my ($number) = @_;
+
+  if (is_hex_number($number)) {
+    # Return the decimal (base 10) equivalent
+    return hex $number;
+  }
+  else {
+    my $hex_equiv = sprintf "%X", $number;
+
+    # Prepend a '0' if $hex_equiv string has an odd number of characters
+    if (length($hex_equiv) % 2 == 1) {
+      $hex_equiv = "0$hex_equiv"
+    }
+
+    my @byte_array = unpack("(A2)*", $hex_equiv);
+    my $big_endian_string = join(' ', @byte_array);
+    my $little_endian_string = join(' ', reverse @byte_array);
+
+    # Return the hexadecimal (base 16) equivalent
+    if ($use_big_endian) { return $big_endian_string; }
+    elsif ($use_little_endian) { return $little_endian_string; }
+    else { return "0x" . $hex_equiv; }
+  }
+}
+
+# This should only be called from GetOptions
+# First arg from GetOptions is the name, and the second is the string that came
+# after the CLI option ('--delimiter' or '-d' in this case)
+sub set_verbose_and_delimiter {
+  my ($opt_name, $user_delimiter) = @_;
+
+  $verbose = 1;
+  $delimiter = $user_delimiter;
+}
+
+=head1 NAME
+
+cn - convert numbers from decimal (base 10) to hexadecimal (base 16), or vice versa
+
+=head1 SYNOPSIS
+
+cn [OPTIONS]... [NUMBERS]...
+
+  -b, --big-endian         Print resulting hexadecimal values as big-endian byte arrays
+  -l, --little-endian      Print resulting hexadecimal values as little-endian byte arrays
+  -v, --verbose            Prepend result with the original number followed by a delimiter (' => ' by default)
+  -d, --delimiter DELIM    Specify delimiter between original number and converted number (sets --verbose)
+  -h, --help               Print this help and exit
+
+=head1 VERSION
+
+0.01
+
+=cut
