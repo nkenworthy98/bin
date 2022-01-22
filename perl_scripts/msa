@@ -2,42 +2,28 @@
 # mpc search any
 use strict;
 use warnings;
-use Getopt::Long qw(GetOptions);
-use List::Util qw(maxstr);
+use List::Util qw(shuffle);
+use Getopt::Long qw(GetOptions HelpMessage);
+use Getopt::Long qw(:config bundling);
 
-my $search_query;
+my $search_query = '';
+my @search_results = ();
+
+# CLI Flags/Variables
+my $shuffle = 0;
+my $regex = '';
 my $search_type = 'any';
-my $use_filename = 0;
-my $re = '';
 
-GetOptions('f' => \$use_filename,
-           're=s' => \$re);
+GetOptions(
+  'filename|f' => sub { $search_type = 'filename' },
+  'shuffle|s' => \$shuffle,
+  'regex|r=s' => \$regex,
+  'help|h' => sub { HelpMessage(0) },
+) or HelpMessage(1);
 
-$search_type = 'filename' if $use_filename;
+parse_filenames_with_regex($regex) if $regex;
 
-# TODO: Rename some of the variables, cleanup, and separate into own function
-# if ($re =~ s/(?<tmp_query>[a-z]+)\Z//) {
-# if ($re =~ /(?<tmp_query>[a-z]+)/) {
-if ($re) {
-  my $re_no_char_classes = $re;
-  $re_no_char_classes =~ s/\\[a-zA-Z]/ /g;
-  # print "re: $re\n";
-  # print "re no char class: $re_no_char_classes\n";
-  if (my @arr = $re_no_char_classes =~ /(?<tmp_query>[a-zA-Z]+)/g) {
-    # print "search_query: $+{tmp_query}\n";
-    my $longest_str = maxstr(@arr);
-    # print "Longest string: $longest_str\n";
-    $search_query = $longest_str;
-    # print "Everything in Array:\n";
-    # print map { $_, "\n" } @arr;
-  }
-  else {
-    die "Your regex must contain a-z or A-Z";
-  }
-  print grep { ! /\.git\// && /$re/i } `mpc search $search_type '$search_query'`;
-  exit;
-}
-
+# Get search query by either joining @ARGV or asking for input
 if (@ARGV) {
   $search_query = join(' ', @ARGV);
 }
@@ -47,5 +33,48 @@ else {
 }
 
 if ($search_query) {
-  print grep { ! /\.git\// } `mpc search $search_type '$search_query'`;
+  @search_results = grep { ! /\.git\// } `mpc search $search_type '$search_query'`;
+
+  if ($shuffle) {
+    print shuffle @search_results;
+  }
+  else {
+    print @search_results;
+  }
 }
+
+sub parse_filenames_with_regex {
+  my ($user_regex) = @_;
+  my @search_results = ();
+
+  @search_results = grep { ! /\.git\// && /$user_regex/i } `mpc listall`;
+  if ($shuffle) {
+    print shuffle @search_results;
+  }
+  else {
+    print @search_results;
+  }
+
+  exit 0;
+}
+
+=head1 NAME
+
+msa - wrapper script for mpc's search functionality
+
+=head1 SYNOPSIS
+
+msa [OPTIONS]... [SEARCH_QUERY]...
+
+If no SEARCH_QUERY, read standard input
+
+  -f, --filename        Search mpd database using a filename query
+  -s, --shuffle         Print search results in a shuffled/random order
+  -r, --regex REGEX     Search filenames using regular expressions (requires a regex inside quotes)
+  -h, --help            Print this help and exit
+
+=head1 VERSION
+
+0.01
+
+=cut
