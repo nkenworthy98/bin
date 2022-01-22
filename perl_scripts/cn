@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+# Convert numbers
+#
+# This will convert decimal numbers (base 10) to hexadecimal (base 16)
+# or hexadecimal numbers to decimal
+use strict;
+use warnings;
+
+my $number = $ARGV[0];
+
+unless ($number =~ /\A(0x|x)[0-9a-f]+\Z|\A[0-9]+\Z/i) {
+  die "You didn't enter a valid number";
+}
+
+if (is_hex_number($number)) {
+  printf "Decimal Equivalent: %d\n", hex $number;
+}
+else {
+  my $hex_equiv = sprintf "%X", $number;
+
+  # Prepend a '0' if $hex_equiv string has an odd number of characters
+  if (length($hex_equiv) % 2 == 1) {
+    $hex_equiv = "0$hex_equiv"
+  }
+
+  my @byte_array = unpack("(A2)*", $hex_equiv);
+  my $big_endian = join(' ', @byte_array);
+  my $little_endian = join(' ', reverse @byte_array);
+
+  print "Hex Equivalent:\t0x$hex_equiv\n";
+  print "Big Endian:\t$big_endian\n";
+  print "Little Endian:\t$little_endian\n";
+}
+
+sub is_hex_number {
+  my ($value) = @_;
+
+  return ($value =~ /\A(0x|x)[0-9a-f]+\Z/i);
+}
