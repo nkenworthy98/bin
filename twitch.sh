@@ -8,10 +8,7 @@ SELECTED_CHANNELS=$(echo "$CHANNEL_LIST" | dmenu -l 20 -i -p "Twitch Stream?")
 play_stream() {
 	CHANNEL=$1
 
-	# Don't even attempt to run streamlink if a channel isn't selected
-	# if [ "$CHANNEL" != "" ]; then
 	streamlink https://www.twitch.tv/"$CHANNEL" || print_error "$CHANNEL"
-	# fi
 }
 
 print_error() {
@@ -23,3 +20,6 @@ print_error() {
 for CHANNEL in $SELECTED_CHANNELS; do
 	play_stream "$CHANNEL" &
 done
+
+hccs.pl
+exit 0
