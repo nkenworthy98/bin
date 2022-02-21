@@ -1,12 +1,15 @@
 #!/usr/bin/perl
-#
-# Examples on how to use this program:
-#   hex-to-256.pl '#ff3030'
-#   hex-to-256.pl '#660000'
-#   hex-to-256.pl '#d4f42b'
-
 use strict;
 use warnings;
+use Getopt::Long qw(GetOptions HelpMessage);
+
+# CLI Flags
+my $use_unweighted = 0;
+
+GetOptions(
+  'unweighted|u' => \$use_unweighted,
+  'help|h' => sub { HelpMessage(0) },
+) or HelpMessage(1);
 
 my @colors_256 = (
   '#000000',
@@ -277,12 +280,17 @@ sub calc_euclidean_distance {
 
   my ($red1, $green1, $blue1) = get_rgb($color1);
   my ($red2, $green2, $blue2) = get_rgb($color2);
+  my $difference = '';
 
-  # This uses weighted values and should, in theory, result in values closer to human perception
-  my $difference = sqrt((($red2-$red1)*0.30)**2 + (($green2-$green1)*0.59)**2 + (($blue2-$blue1)*0.11)**2);
 
   # This is the unweighted calculation
-  # my $difference = sqrt(($red2-$red1)**2 + ($green2-$green1)**2 + ($blue2-$blue1)**2);
+  if ($use_unweighted) {
+    $difference = sqrt(($red2-$red1)**2 + ($green2-$green1)**2 + ($blue2-$blue1)**2);
+  }
+  # This uses weighted values and should, in theory, result in values closer to human perception
+  else {
+    $difference = sqrt((($red2-$red1)*0.30)**2 + (($green2-$green1)*0.59)**2 + (($blue2-$blue1)*0.11)**2);
+  }
 
   return $difference;
 }
@@ -317,3 +325,34 @@ sub get_closest_256_color {
   # The returned index is the closest 256 color code
   return $index_of_min;
 }
+
+=head1 NAME
+
+hex-to-256.pl - convert hex color code to closest 256 color
+
+=head1 DESCRIPTION
+
+B<hex-to-256.pl> converts hex color codes to the closest 256 color.
+By default, B<hex-to-256.pl> will use the weighted Euclidean Distance calculation.
+If this causes any unexpected/inaccurate results, use the B<--unweighted> option.
+
+=head1 SYNOPSIS
+
+hex-to-256.pl [OPTIONS] HEX_COLOR_CODE
+
+  -u, --unweighted    Use the unweighted Euclidean Distance calculation
+  -h, --help          Print this help and exit
+
+For more detailed documentation, run C<perldoc hex-to-256.pl>
+
+=head1 EXAMPLES
+
+Print weighted equivalent 256 color of '#ff3030'
+
+  $ hex-to-256.pl '#ff3030'
+
+Print unweighted equivalent 256 color of '#d4f42b'
+
+  $ hex-to-256.pl --unweighted '#d4f42b'
+
+=cut
