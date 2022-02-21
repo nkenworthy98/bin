@@ -19,6 +19,7 @@ GetOptions(
   'little-endian|l' => \$use_little_endian,
   'verbose|v' => \$verbose,
   'delimiter|d=s' => \&set_verbose_and_delimiter,
+  'stdin|i' => \&read_from_stdin,
   'help|h' => sub { HelpMessage(0) },
 ) or HelpMessage(1);
 
@@ -36,7 +37,6 @@ foreach my $value (@ARGV) {
     warn "'$value' is not a valid number $!";
   }
 }
-
 
 if ($verbose) {
   # Print results prepended by the original number and delimiter
@@ -95,9 +95,18 @@ sub set_verbose_and_delimiter {
   $delimiter = $user_delimiter;
 }
 
+sub read_from_stdin {
+  my @stdin_values = <STDIN>;
+  chomp(@stdin_values);
+
+  # Send contents of STDIN to @ARGV because that's how all the other numbers
+  # are handled
+  push(@ARGV, @stdin_values);
+}
+
 =head1 NAME
 
-cn - convert numbers from decimal (base 10) to hexadecimal (base 16), or vice versa
+cn - convert numbers from decimal (base 10) to hexadecimal (base 16) or from hexadecimal numbers to decimal
 
 =head1 SYNOPSIS
 
@@ -107,10 +116,9 @@ cn [OPTIONS]... [NUMBERS]...
   -l, --little-endian      Print resulting hexadecimal values as little-endian byte arrays
   -v, --verbose            Prepend result with the original number followed by a delimiter (' => ' by default)
   -d, --delimiter DELIM    Specify delimiter between original number and converted number (sets --verbose)
+  -i, --stdin              Read values from stdin (from pipe or from manual user input)
   -h, --help               Print this help and exit
 
-=head1 VERSION
-
-0.01
+For more detailed documentation, run C<perldoc cn>
 
 =cut
