@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# mcp search play
+# mpc search play
 use strict;
 use warnings;
 use IPC::Open2;
@@ -11,7 +11,6 @@ my $dmenu_str = join('', @songs);
 my @selections = send_to_dmenu($dmenu_str);
 
 if (@selections) {
- system("killall ashuffle");
  system("mpc clear");
  system("mpc", "add", @selections);
  system("mpc play");
