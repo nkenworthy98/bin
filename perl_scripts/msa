@@ -13,54 +13,86 @@ my @search_results = ();
 my $shuffle = 0;
 my $regex = '';
 my $search_type = 'any';
+my $mpc_clear = 0;
+my $mpc_play = 0;
+my $enqueue = 0;
+my $number_of_results = 0;
+my $quiet = 0;
+my $exclude_regex = '';
 
 GetOptions(
   'filename|f' => sub { $search_type = 'filename' },
   'shuffle|s' => \$shuffle,
   'regex|r=s' => \$regex,
+  'clear-queue|c' => \$mpc_clear,
+  'enqueue|e' => \$enqueue,
+  'play-queue|p' => \$mpc_play,
+  'number|n=i' => \$number_of_results,
+  'quiet|q' => \$quiet,
+  'new-queue|N' => \&set_new_queue_flags,
+  'exclude|x=s' => \$exclude_regex,
   'help|h' => sub { HelpMessage(0) },
 ) or HelpMessage(1);
 
-parse_filenames_with_regex($regex) if $regex;
+`mpc clear` if $mpc_clear;
 
 # Get search query by either joining @ARGV or asking for input
+# Manual input isn't required if @ARGV is empty and --regex is set because the
+# string that's passed into regex acts as the search query
 if (@ARGV) {
   $search_query = join(' ', @ARGV);
 }
-else {
+elsif (! $regex) {
   printf STDERR "MPC Search %s?\n", ucfirst $search_type;
   chomp($search_query = <STDIN>);
 }
 
-if ($search_query) {
+# Filter out any lines containing .git directories that git-annex creates
+# Otherwise, half of the results are .git followed by hashes
+if ($regex) {
+  @search_results = grep { ! /\.git\// && /$regex/i } `mpc listall`;
+}
+elsif ($search_query) {
   @search_results = grep { ! /\.git\// } `mpc search $search_type '$search_query'`;
-
-  if ($shuffle) {
-    print shuffle @search_results;
-  }
-  else {
-    print @search_results;
-  }
 }
 
-sub parse_filenames_with_regex {
-  my ($user_regex) = @_;
-  my @search_results = ();
+if ($shuffle) {
+  @search_results = shuffle @search_results;
+}
+if ($number_of_results > 0 && $number_of_results <= $#search_results) {
+  @search_results = @search_results[0..$number_of_results - 1];
+}
+if ($exclude_regex) {
+  @search_results = grep { ! /$exclude_regex/i } @search_results;
+}
 
-  @search_results = grep { ! /\.git\// && /$user_regex/i } `mpc listall`;
-  if ($shuffle) {
-    print shuffle @search_results;
-  }
-  else {
-    print @search_results;
-  }
+print @search_results unless $quiet;
+pipe_to_mpc_add(\@search_results) if $enqueue;
+`mpc play` if $mpc_play;
 
-  exit 0;
+sub pipe_to_mpc_add {
+  my ($songs_ref) = @_;
+
+  open(my $mpc_pipe, "|-", "mpc add")
+      or die "Problem opening pipe to mpc add";
+  print $mpc_pipe @{$songs_ref};
+  close($mpc_pipe) or die "Problem closing pipe to mpc add";
+}
+
+sub set_new_queue_flags {
+  $mpc_clear = 1;
+  $enqueue = 1;
+  $mpc_play = 1;
+  $quiet = 1;
 }
 
 =head1 NAME
 
-msa - wrapper script for mpc's search functionality
+msa - mpc search any
+
+=head1 DESCRIPTION
+
+This is a wrapper script for mpc's search functionality
 
 =head1 SYNOPSIS
 
@@ -71,10 +103,55 @@ If no SEARCH_QUERY, read standard input
   -f, --filename        Search mpd database using a filename query
   -s, --shuffle         Print search results in a shuffled/random order
   -r, --regex REGEX     Search filenames using regular expressions (requires a regex inside quotes)
+  -c, --clear-queue     Clear song queue
+  -e, --enqueue         Enqueue resulting songs
+  -p, --play-queue      Play songs after they've been enqueued
+  -n, --number NUM      Limit the number of resulting songs to at most NUM songs
+  -q, --quiet           Don't print resulting songs to STDOUT
+  -N, --new-queue       Create a new queue by clearing queue, enqueueing new songs, and playing
+                            (alias for --clear-queue, --enqueue, --quiet, and --play-queue)
+  -x, --exclude REGEX   Filter out results that match the regular expression (requires regex inside quotes)
   -h, --help            Print this help and exit
 
-=head1 VERSION
+For more detailed documentation or examples, run C<perldoc msa>.
 
-0.01
+=head1 EXAMPLES
+
+Prompt the user to enter in a string that will use mpc's search any functionality to look through the metadata of music files.
+Any songs containing metadata with that string will be printed to the screen.
+
+  $ msa
+
+Any songs containing metadata with 'bohemian rhapsody' will be printed to the screen.
+Quotes are not required for strings separated by spaces.
+
+  $ msa bohemian rhapsody
+
+Prompt the user to enter in a string that will use mpc's search filename functionality to look through the filenames of music files.
+Any songs containing filenames with that string will be printed to the screen.
+
+  $ msa -f
+
+Any songs containing filenames with 'bites the dust' will be printed to the screen.
+Again, quotes are not required for strings separated by spaces.
+
+  $ msa -f bites the dust
+
+Search filenames using regex.
+Any filenames (which include the path to that file) that contain 'piano' followed by 'two' somewhere in the string will be returned.
+If the regex contains any special characters or contains more than one word, it must be surrounded by quotes.
+The regex is case insensitive.
+
+  $ msa -r 'piano.*two'
+
+Clear the queue, shuffle the results, and enqueue (at most) 75 songs with filenames containing either 'jazz' or 'classical',
+and begin playing the songs.
+Again, the regex is case insensitive.
+
+  $ msa -Nsr 'jazz|classical' -n 75
+
+Print all filenames that contain a '/' and don't include 'classic' or 'greatest'.
+
+  $ msa -r '/' -x 'classic|greatest'
 
 =cut
