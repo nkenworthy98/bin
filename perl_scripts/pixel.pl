@@ -106,12 +106,44 @@ foreach my $color (@extracted_hex_codes) {
   my $color_256 = `hex-to-256.pl --unweighted '$color'`;
   chomp($color_256);
 
+  my ($red, $green, $blue) = get_true_color_equivalents($color);
+  my $color_str = 'r' . $red . 'g' . $green . 'b' . $blue;
+
   $output_buffer .= "$color -> ";
+  # Print hex color codes in true color (assuming terminal supports it)
+  $output_buffer .= colored($color, 'on_' . $color_str) . ' ';
+  $output_buffer .= colored($color, $color_str) . ' -> ';
+  # Print equivalent 256 colors
   $output_buffer .= colored($color_256, 'on_ansi' . $color_256) . ' ';
   $output_buffer .= colored($color_256, 'ansi' . $color_256) . "\n";
 }
 
 print $output_buffer;
+
+sub get_true_color_equivalents {
+  my ($hex_code) = @_;
+
+  $hex_code =~ s/#//;
+  my @hex_bytes = ($hex_code =~ /[0-9a-f]{2}/gi);
+
+  # decimal (base 10) equivalents
+  my @dec_equivalents = map { get_dec_equivalent($_) } @hex_bytes;
+
+  my $red = $dec_equivalents[0];
+  my $green = $dec_equivalents[1];
+  my $blue = $dec_equivalents[2];
+
+  return $red, $green, $blue;
+}
+
+sub get_dec_equivalent {
+  my ($hex_byte) = @_;
+
+  # convert to decimal value and make sure that there are always 3 digits
+  my $dec = sprintf "%03d", hex $hex_byte;
+
+  return $dec;
+}
 
 =head1 NAME
 
