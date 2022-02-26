@@ -208,7 +208,7 @@ sub set_ncmpcpp_visualizer_colors {
   # These colors will start at the one returned from hex-to-256.pl
   # and increment by 1 until there's 10 colors in total
   while ($counter < 9) {
-    $color = ($color + 1) % 256;
+    $color = ($color % 256) + 1;
     push(@visualizer_colors, $color);
     $counter += 1;
   }
