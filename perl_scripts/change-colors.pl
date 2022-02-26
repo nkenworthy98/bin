@@ -154,7 +154,7 @@ sub change_ncmpcpp_colors {
 
   # Rather than dealing with codes 0-255, ncmpcpp
   # deals with 1-256, so 1 needs to be added
-  chomp(my $color_256 = `hex-to-256.pl "$color"`);
+  chomp(my $color_256 = `hex-to-256.pl --unweighted "$color"`);
 
   # Don't want colors to go beyond 256,
   $color_256 = ($color_256 + 1) % 256 ;
@@ -220,7 +220,7 @@ sub change_nnn_colors {
   my ($color, $path_conf) = @_;
   open(my $nnn_in, "<", $path_conf) or die "Can't open $path_conf: $!";
 
-  chomp(my $color_256 = `hex-to-256.pl "$color"`);
+  chomp(my $color_256 = `hex-to-256.pl --unweighted "$color"`);
 
   my $colors_replacement = set_nnn_colors($color_256);
   my @nnn_contents;
