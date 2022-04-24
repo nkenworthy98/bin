@@ -42,7 +42,7 @@ sub is_sxiv_link {
 sub is_mpv_link {
   my $link = shift @_;
 
-  return ( $link =~ /youtube\.com/
+  return ( ($link =~ /youtube\.com/ && $link !~ /\/clip\//)
            || $link =~ /clips\.twitch\.tv/
            || $link =~ /twitch\.tv/
            || $link =~ /odysee\.com/
