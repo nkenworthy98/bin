@@ -1,42 +1,106 @@
 #!/usr/bin/perl
-# Quickly make a search online using your browser of choice.
-#
-# This script has an interactive and a non-interactive version.
-# If you want the interactive version, simply type "s" in your
-# terminal, hit Enter, and you'll be prompted to type in what
-# you want to search for.
-#
-# If you want the non-interactive version type "s" followed
-# by whatever you want to search for.
-# Example:
-#
-#   s perl tutorial
-#
-# This will open your web browser of choice (configured
-# using the $browser variable) with "perl tutorial" as
-# the search query
 use strict;
 use warnings;
+use Getopt::Long qw(GetOptions HelpMessage);
 
-# Change $search_base_url to your your favorite search engine's
-# search query url. Make sure that only one of the $search_base_url
-# lines is uncommented.
-#
-# A couple examples:
-#
-# my $search_base_url = "https://duckduckgo.com/?q=";
-# my $search_base_url = "https://searx.info/search?q=";
+my %supported_sites = (
+  'ddg' =>  "https://duckduckgo.com/?q=",
+  'searx-local' =>  "http://localhost:8888/search?q=",
+);
 
-my $search_base_url = "http://localhost:8888/search?q=";
+my $search_base_url = $supported_sites{'searx-local'};
 my $browser = "w3m";
 my $search_string;
+
+GetOptions(
+  'list-supported|l' => sub { print_search_engines(); exit(0) },
+  'browser|b=s' => \&set_browser,
+  'use-engine=s' => \&set_search_engine,
+  'help|h' => sub { HelpMessage(0) },
+) or HelpMessage(1);
 
 if (@ARGV) {
   $search_string = join(' ', @ARGV);
 } else {
-  print "Type in what you want to search for:\n";
+  print STDERR "Type in what you want to search for:\n";
+  print STDERR "(Separate search queries with '!')\n";
   chomp($search_string = <STDIN>);
 }
 
-my $search_query = $search_base_url . $search_string;
-system("$browser", "$search_query");
+my @searches = split("!", $search_string);
+# Each search query will be in the form "https://duckduckgo.com/?q=search query here"
+my @search_queries = map { $search_base_url . $_ } @searches;
+
+# w3m requires the '-N' option to open multiple tabs when there's multiple URLs being passed
+if ($browser eq 'w3m') {
+  system($browser, '-N', @search_queries);
+}
+else {
+  system($browser, @search_queries);
+}
+
+sub print_search_engines {
+  foreach my $site (sort keys %supported_sites) {
+    print "$site -- $supported_sites{$site}\n";
+  }
+}
+
+# Should only be used by GetOptions
+sub set_browser {
+  my ($opt_name, $opt_value) = @_;
+
+  $browser = $opt_value;
+}
+
+# Should only be used by GetOptions
+sub set_search_engine {
+  my ($opt_name, $opt_value) = @_;
+
+  if (exists $supported_sites{$opt_value}) {
+    $search_base_url = $supported_sites{$opt_value};
+  }
+  else {
+    die "'$opt_value' is not a supported search engine.\n";
+  }
+}
+
+=head1 NAME
+
+s - search quickly using your browser of choice
+
+=head1 DESCRIPTION
+
+This script has an interactive and a non-interactive version.
+If you want the interactive version, simply type "s" in your
+terminal, hit Enter, and you'll be prompted to type in what
+you want to search for.
+
+If you want the non-interactive version type "s" followed
+by whatever you want to search for.
+
+Example:
+
+  s perl tutorial
+
+This will open your web browser of choice (configured
+using the $browser variable) with "perl tutorial" as
+the search query
+
+You can also separate multiple search queries using '!'.
+If you use this feature in the non-interactive mode, you must have the search wrapped inside quotes.
+
+Example:
+
+  s -b firefox -u ddg "the perl programming language!learning golang"
+
+This will open searches for 'the perl programming language' and 'learning golang' in different tabs using firefox.
+
+=head1 SYNOPSIS
+
+  -l, --list-supported            Print supported search engines
+  -b, --browser BROWSER           Open search query in BROWSER
+  -u, --use-engine SEARCH_ENGINE  Make search using SEARCH_ENGINE
+                                    (default: searx-local)
+  -h, --help                      Print this help and exit
+
+For more detailed documentation, run C<perldoc s>
