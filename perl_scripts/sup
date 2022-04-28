@@ -12,14 +12,14 @@ my $container_name = get_container_name();
 
 # Don't attempt to stop container if searx image isn't already running
 if ($container_name) {
-  system("sudo docker stop $container_name");
+  system("docker stop $container_name");
 }
 chdir($searx_dir) or die "Error: can't cd into $searx_dir";
-system("sudo docker pull searx/searx");
-exec("sudo docker run --rm -d -v $searx_dir/searx:/etc/searx -p $port:8080 -e BASE_URL=http://localhost:$port/ searx/searx");
+system("docker pull searx/searx");
+exec("docker run --rm -d -v $searx_dir/searx:/etc/searx -p $port:8080 -e BASE_URL=http://localhost:$port/ searx/searx");
 
 sub get_container_name {
-  my @docker_ps_output = `sudo docker ps`;
+  my @docker_ps_output = `docker ps`;
 
   foreach my $line (@docker_ps_output) {
     # Check for the line that uses the 'searx/searx' image and extract the
