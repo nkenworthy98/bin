@@ -8,6 +8,7 @@ use Getopt::Long qw(:config bundling);
 
 my $search_query = '';
 my @search_results = ();
+my %search_results_hash = ();
 
 # CLI Flags/Variables
 my $shuffle = 0;
@@ -18,6 +19,7 @@ my $mpc_play = 0;
 my $enqueue = 0;
 my $number_of_results = 0;
 my $quiet = 0;
+my $show_cue_titles = 0;
 my $exclude_regex = '';
 
 GetOptions(
@@ -30,6 +32,7 @@ GetOptions(
   'number|n=i' => \$number_of_results,
   'quiet|q' => \$quiet,
   'new-queue|N' => \&set_new_queue_flags,
+  'show-cue-titles|t' => \$show_cue_titles,
   'exclude|x=s' => \$exclude_regex,
   'help|h' => sub { HelpMessage(0) },
 ) or HelpMessage(1);
@@ -50,12 +53,29 @@ elsif (! $regex) {
 # Filter out any lines containing .git directories that git-annex creates
 # Otherwise, half of the results are .git followed by hashes
 if ($regex) {
-  @search_results = grep { ! /\.git\// && /$regex/i } `mpc listall`;
+  # Running mpc's --format (-f) option with listall significantly slows the
+  # program down, so only include %title% if the --show-cue-titles flag is
+  # passed
+  my $mpc_listall_command = '';
+  if ($show_cue_titles) {
+    $mpc_listall_command = 'mpc -f "%file% --- %title%" listall';
+  }
+  else {
+    $mpc_listall_command = 'mpc listall';
+  }
+
+  # Key is the filename and the value is the title
+  %search_results_hash = map { split_files_and_titles($_) }
+                         grep { ! /\.git\// && /$regex/i }
+                         `$mpc_listall_command`;
 }
 elsif ($search_query) {
-  @search_results = grep { ! /\.git\// } `mpc search $search_type '$search_query'`;
+  %search_results_hash = map { split_files_and_titles($_) }
+                         grep { ! /\.git\// }
+                         `mpc -f '%file% --- %title%' search $search_type '$search_query'`;
 }
 
+@search_results = sort keys %search_results_hash;
 if ($shuffle) {
   @search_results = shuffle @search_results;
 }
@@ -66,9 +86,39 @@ if ($exclude_regex) {
   @search_results = grep { ! /$exclude_regex/i } @search_results;
 }
 
-print @search_results unless $quiet;
+unless ($quiet) {
+  # This option (--show-cue-titles) is incompatible with --shuffle
+  # For consistent behavior, I decided to force the sorting
+  # of the hash keys if --show-cue-titles is set
+  if ($show_cue_titles) {
+    foreach my $key (sort keys %search_results_hash) {
+      print $key;
+      if ($key =~ /\.cue\/track\d+\Z/) {
+        print STDERR "\t$search_results_hash{$key}";
+      }
+    }
+  }
+  else {
+    print @search_results;
+  }
+}
+
 pipe_to_mpc_add(\@search_results) if $enqueue;
 `mpc play` if $mpc_play;
+
+sub split_files_and_titles {
+  my ($file_and_title_string) = @_;
+
+  my ($file, $title) = split(' --- ', $file_and_title_string);
+
+  # If split is successful, $file doesn't have newline, so add one back
+  # $title will only have a value if the split was successful
+  if ($title) {
+    $file .= "\n";
+  }
+
+  return $file, $title;
+}
 
 sub pipe_to_mpc_add {
   my ($songs_ref) = @_;
@@ -100,18 +150,20 @@ msa [OPTIONS]... [SEARCH_QUERY]...
 
 If no SEARCH_QUERY, read standard input
 
-  -f, --filename        Search mpd database using a filename query
-  -s, --shuffle         Print search results in a shuffled/random order
-  -r, --regex REGEX     Search filenames using regular expressions (requires a regex inside quotes)
-  -c, --clear-queue     Clear song queue
-  -e, --enqueue         Enqueue resulting songs
-  -p, --play-queue      Play songs after they've been enqueued
-  -n, --number NUM      Limit the number of resulting songs to at most NUM songs
-  -q, --quiet           Don't print resulting songs to STDOUT
-  -N, --new-queue       Create a new queue by clearing queue, enqueueing new songs, and playing
-                            (alias for --clear-queue, --enqueue, --quiet, and --play-queue)
-  -x, --exclude REGEX   Filter out results that match the regular expression (requires regex inside quotes)
-  -h, --help            Print this help and exit
+  -f, --filename         Search mpd database using a filename query
+  -s, --shuffle          Print search results in a shuffled/random order
+  -r, --regex REGEX      Search filenames using regular expressions (requires a regex inside quotes)
+  -c, --clear-queue      Clear song queue
+  -e, --enqueue          Enqueue resulting songs
+  -p, --play-queue       Play songs after they've been enqueued
+  -n, --number NUM       Limit the number of resulting songs to at most NUM songs
+  -q, --quiet            Don't print resulting songs to STDOUT
+  -N, --new-queue        Create a new queue by clearing queue, enqueueing new songs, and playing
+                             (alias for --clear-queue, --enqueue, --quiet, and --play-queue)
+  -t, --show-cue-titles  Print cue file titles if they are returned
+                             (Note: this option will take precedence over --shuffle)
+  -x, --exclude REGEX    Filter out results that match the regular expression (requires regex inside quotes)
+  -h, --help             Print this help and exit
 
 For more detailed documentation or examples, run C<perldoc msa>.
 
@@ -153,5 +205,18 @@ Again, the regex is case insensitive.
 Print all filenames that contain a '/' and don't include 'classic' or 'greatest'.
 
   $ msa -r '/' -x 'classic|greatest'
+
+Print the titles of cue files if they are matching results.
+The titles will be printed to STDERR, so the actual results can still be added to mpc queue.
+
+Note: This option (--show-cue-titles|-t) will take precedence over --shuffle|-s.
+Also, if this option is run with --regex, the program will run significantly slower.
+
+  $ msa -t classical
+
+  Result might look look like for any cue files:
+
+  Classical/Decca Ultimate/Ultimate Classical Guitar/CD2/CDImage.cue/track0017
+        Vivaldi: Sonata, RV.85 - ii. Larghetto
 
 =cut
