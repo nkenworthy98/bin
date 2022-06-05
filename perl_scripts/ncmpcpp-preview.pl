@@ -22,7 +22,7 @@ if ($full_music_path =~ /\.cue(?<cue_track>\/track\d+\Z)/) {
 }
 
 # 'p' is the plugin key I have for nnn in order to use preview-tui
-system("nnn -P p '$full_music_path'");
+system("nnn", "-P", "p", "$full_music_path");
 
 # Useful for debugging
 # print "$full_music_path\n";
