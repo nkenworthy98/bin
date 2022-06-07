@@ -21,5 +21,8 @@ for CHANNEL in $SELECTED_CHANNELS; do
 	play_stream "$CHANNEL" &
 done
 
-hccs.pl
+# This will prevent hccs.pl from running unless a selection is made in dmenu
+if [ "$SELECTED_CHANNELS" != "" ]; then
+	hccs.pl
+fi
 exit 0
