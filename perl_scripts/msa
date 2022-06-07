@@ -214,7 +214,7 @@ Also, if this option is run with --regex, the program will run significantly slo
 
   $ msa -t classical
 
-  Result might look look like for any cue files:
+  Here's what the result might look like for any cue files:
 
   Classical/Decca Ultimate/Ultimate Classical Guitar/CD2/CDImage.cue/track0017
         Vivaldi: Sonata, RV.85 - ii. Larghetto
