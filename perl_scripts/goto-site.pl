@@ -14,37 +14,45 @@ use warnings;
 
 my $browser = 'firefox';
 
-my @sites_list = (
-  'nitter',
-  'teddit',
-  'archwiki',
-  'searx',
+my %sites_hash = (
+  'nitter' => \&open_nitter_pages,
+  'teddit' => \&open_teddit_pages,
+  'archwiki' => \&open_archwiki_pages,
+  'searx' => \&open_searx_pages,
 );
 
-my $site_choice = ask_user_for_site(@sites_list);
+my $site_choices_ref = ask_user_for_site(\%sites_hash);
 
-if ($site_choice eq 'nitter') {
-  open_nitter_pages();
+my @urls = ();
+foreach my $site_choice (@{$site_choices_ref}) {
+  if (exists $sites_hash{$site_choice}) {
+
+    # @urls should be a flat array
+    # Without the code below, @urls becomes an array of arrays
+    my $urls_ref = $sites_hash{$site_choice}->();
+    foreach my $url (@{$urls_ref}) {
+      push(@urls, $url);
+    }
+  }
 }
-elsif ($site_choice eq 'teddit') {
-  open_teddit_pages();
-}
-elsif ($site_choice eq 'archwiki') {
-  open_archwiki_pages();
-}
-elsif ($site_choice eq 'searx') {
-  open_searx_pages();
+
+if (@urls) {
+  exec($browser, @urls);
 }
 
 sub ask_user_for_site {
-  my @sites = @_;
+  my ($sites_hash_ref) = @_;
 
-  my $site_count = @sites;
+  my @sites = sort keys %{$sites_hash_ref};
+  my $site_count = scalar @sites;
   my $printf_format_str = create_printf_format_str($site_count);
-  my $site_choice = `printf '$printf_format_str' @sites | dmenu -i -l $site_count -p 'Site?'`;
-  chomp($site_choice);
+  # $site_choices_str can have more than one site if user selects multiple values from dmenu
+  # These sites are separated by newlines
+  my $site_choices_str = `printf '$printf_format_str' @sites | dmenu -i -l $site_count -p 'Site?'`;
 
-  return $site_choice;
+  my @site_choices = split("\n", $site_choices_str);
+
+  return \@site_choices;
 }
 
 # Used for the printf shell command
@@ -66,56 +74,60 @@ sub create_printf_format_str {
 
 sub open_nitter_pages {
   # Open nitter home page if a username isn't provided
-  my @nitter_usernames = split(' ',`printf '' | dmenu -p 'Nitter Username(s)?'`)
-      or open_nitter_homepage();
-  my @nitter_urls;
+  my @nitter_usernames = split(' ',`printf '' | dmenu -p 'Nitter Username(s)?'`);
+  my @nitter_urls = ();
 
   foreach my $user (@nitter_usernames) {
+    # different nitter instances for different nitter pages
     chomp(my $nitter_base_url = `grni.sh`);
     my $url = "https://$nitter_base_url/$user";
 
     push(@nitter_urls, $url);
   }
 
-  exec("$browser", @nitter_urls);
-}
+  # User might type a username, so return homepage
+  if (! @nitter_usernames) {
+    # grni.sh is a script that returns a random nitter instance
+    chomp(my $nitter_home_page = `grni.sh`);
+    push(@nitter_urls, $nitter_home_page);
+  }
 
-sub open_nitter_homepage {
-  chomp(my $nitter_home_url = `grni.sh`);
-  exec("$browser", "https://$nitter_home_url");
+  return \@nitter_urls;
 }
 
 sub open_teddit_pages {
   # Open teddit home page if a subreddit isn't provided
-  my @teddit_subreddits = split(' ',`printf '' | dmenu -p 'Teddit Subreddit(s)?'`)
-      or open_teddit_homepage();
-  my $teddit_base_url = 'teddit.net';
-  my @teddit_urls;
+  my @teddit_subreddits = split(' ',`printf '' | dmenu -p 'Teddit Subreddit(s)?'`);
+  my @teddit_urls = ();
 
   foreach my $subreddit (@teddit_subreddits) {
-    my $url = "https://$teddit_base_url/r/$subreddit?theme=dark";
+    my $url = "https://teddit.net/r/$subreddit?theme=dark";
 
     push(@teddit_urls, $url);
   }
 
-  exec("$browser", @teddit_urls);
-}
+  # return teddit homepage if user doesn't enter subreddit in dmenu
+  if (! @teddit_subreddits) {
+    push(@teddit_urls, "https://teddit.net?theme=dark");
+  }
 
-sub open_teddit_homepage {
-  exec("$browser", "https://teddit.net?theme=dark");
+  return \@teddit_urls;
 }
 
 sub open_archwiki_pages {
   my $archwiki_string = `printf '' | dmenu -p 'ArchWiki Page(s)? (Type ! at beginning for search)'`;
   chomp($archwiki_string);
-
-  my @archwiki_urls;
+  my @archwiki_urls = ();
 
   if (is_archwiki_search($archwiki_string)) {
-    open_archwiki_search_page($archwiki_string);
-  } else {
-    open_archwiki_title_pages($archwiki_string);
+    push(@archwiki_urls, open_archwiki_search_page($archwiki_string));
   }
+  else {
+    my $title_pages_ref = open_archwiki_title_pages($archwiki_string);
+    @archwiki_urls = @{$title_pages_ref};
+  }
+
+  return \@archwiki_urls;
 }
 
 sub is_archwiki_search {
@@ -131,40 +143,37 @@ sub open_archwiki_search_page {
   $archwiki_string =~ s/\A!//;
   # Replace all spaces with '+', so they can be used in the url
   $archwiki_string =~ s/ /+/g;
-
   my $url = "https://wiki.archlinux.org/index.php?search=$archwiki_string&title=Special%3ASearch&fulltext=1";
 
-  exec("$browser", $url);
+ return $url;
 }
 
 sub open_archwiki_title_pages {
   my ($archwiki_string) = @_;
 
   my @archwiki_pages = split(' ', $archwiki_string);
-  my $url;
-  my @archwiki_urls;
+  my @archwiki_urls = ();
 
   foreach my $page (@archwiki_pages) {
-    $url = "https://wiki.archlinux.org/title/$page?useskinversion=1";
-
+    my $url = "https://wiki.archlinux.org/title/$page?useskinversion=1";
     push(@archwiki_urls, $url);
   }
 
-  exec("$browser", @archwiki_urls);
+  return \@archwiki_urls;
 }
 
 sub open_searx_pages {
-  my $searx_string = `dmenu -p 'Searx queries? (Separate searches with '!')'`;
+  my $searx_string = `printf '' | dmenu -p 'Searx queries? (Separate searches with '!')'`;
+  chomp($searx_string);
+  my @urls_searx = ();
 
   $searx_string =~ s/ /+/g;
   my @searxes = split('!', $searx_string);
 
-  my @urls_searx = ();
   foreach my $search_query (@searxes) {
     my $url = "http://localhost:8888/search?q=$search_query";
-
     push(@urls_searx, $url);
   }
 
-  exec("$browser", @urls_searx);
+  return \@urls_searx;
 }
