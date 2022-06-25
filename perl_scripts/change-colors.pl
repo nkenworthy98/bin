@@ -2,6 +2,7 @@
 # Script to change colors in all the main programs I use.
 use strict;
 use warnings;
+use Getopt::Long qw(GetOptions HelpMessage);
 
 # MAIN_CUSTOM_COLOR environment variable is expected to be
 # set in your shell's rc file in the following format:
@@ -18,7 +19,19 @@ my $path_ncmpcpp_conf = "$home/.config/ncmpcpp/config";
 my $path_dwm = "$home/.sucklessPrograms/dwm/";
 my $path_dmenu = "$home/.sucklessPrograms/dmenu/";
 
+GetOptions(
+  # Takes precedence over MAIN_CUSTOM_COLOR and sets it
+  'color|c=s' => \$new_color,
+  'help|h' => sub { HelpMessage(0) },
+) or HelpMessage(1);
+
 is_hex_color_code($new_color) or die "ERROR: $new_color isn't a valid hex color code";
+
+# If user forces a new color using --color, update MAIN_CUSTOM_COLOR in shell's
+# rc, so programs that read this value in order to set colors use --color
+if ($new_color ne $ENV{'MAIN_CUSTOM_COLOR'}) {
+  change_main_custom_color_in_rc($new_color, $path_shellrc);
+}
 
 change_tmux_colors($new_color, $path_tmux_conf);
 change_dwm_colors($new_color, $path_dwm);
@@ -33,6 +46,24 @@ sub is_hex_color_code {
   # Returns 1 if passed in value is a valid hex color code
   # Else, returns 0
   return ($num =~ /\A#[0-9a-f]{6}\z/i);
+}
+
+sub change_main_custom_color_in_rc {
+  my ($color, $path_conf) = @_;
+
+  open(my $shellrc_in, '<', $path_conf) or die "Can't open $path_conf: $!";
+  my @shellrc_contents;
+  while (<$shellrc_in>) {
+    if (/\Aexport MAIN_CUSTOM_COLOR='(?<previous_color>#[0-9a-fA-F]{6})'/) {
+      s/$+{previous_color}/$color/;
+    }
+    push(@shellrc_contents, $_);
+  }
+  close $shellrc_in or die "$shellrc_in: $!";
+
+  open(my $shellrc_out, '>', $path_conf) or die "Can't open $path_conf: $!";
+  print $shellrc_out @shellrc_contents;
+  close $shellrc_out or die "$shellrc_out: $!";
 }
 
 sub change_tmux_colors {
@@ -271,3 +302,24 @@ sub set_nnn_colors {
   my $colors_string = join("", @nnn_colors);
   return $colors_string;
 }
+
+=head1 NAME
+
+change-color.pl - Change the colors in some of the programs that I use
+
+=head1 DESCRIPTION
+
+Change the colors in some of the main programs that I use.
+These programs include tmux, dwm, dmenu, dunst, ncmpcpp, and nnn.
+By default, it reads the users's shell rc for a variable MAIN_CUSTOM_COLOR (in the form #123123).
+A user can also pass --color #123123 in order to set this value.
+
+=head1 SYNOPSIS
+
+  -c, --color COLOR   Set the main color to be used
+                        (note: color should be in the form #123123)
+  -h, --help          Print this help and quit
+
+For more detailed documentation, run C<perldoc change-colors.pl>.
+
+=cut
