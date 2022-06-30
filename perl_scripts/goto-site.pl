@@ -85,7 +85,7 @@ sub open_nitter_pages {
     push(@nitter_urls, $url);
   }
 
-  # User might type a username, so return homepage
+  # User might not type a username, so return homepage
   if (! @nitter_usernames) {
     # grni.sh is a script that returns a random nitter instance
     chomp(my $nitter_home_page = `grni.sh`);
