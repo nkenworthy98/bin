@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# Searx up
-# Pull down latest searx image and start it up
+# Searxng up
+# Pull down latest searxng image and start it up
 # If an instance is already running, this will stop it and start a new one
 use strict;
 use warnings;
 
-my $searx_dir = "$ENV{'HOME'}/.otherPrograms/searx-docker";
+my $searxng_dir = "$ENV{'HOME'}/.otherPrograms/searxng-docker";
 my $port = 8888;
 
 my $container_name = get_container_name();
@@ -14,17 +14,17 @@ my $container_name = get_container_name();
 if ($container_name) {
   system("docker stop $container_name");
 }
-chdir($searx_dir) or die "Error: can't cd into $searx_dir";
-system("docker pull searx/searx");
-exec("docker run --rm -d -v $searx_dir/searx:/etc/searx -p $port:8080 -e BASE_URL=http://localhost:$port/ searx/searx");
+chdir($searxng_dir) or die "Error: can't cd into $searxng_dir";
+system("docker pull searxng/searxng");
+exec("docker run --rm -d -v $searxng_dir/searxng:/etc/searxng -p $port:8080 -e BASE_URL=http://localhost:$port/ searxng/searxng");
 
 sub get_container_name {
   my @docker_ps_output = `docker ps`;
 
   foreach my $line (@docker_ps_output) {
-    # Check for the line that uses the 'searx/searx' image and extract the
+    # Check for the line that uses the 'searxng/searxng' image and extract the
     # container name
-    if ($line =~ /searx\/searx/ && $line =~ /(?<container_name>[a-z]+_[a-z]+\Z)/) {
+    if ($line =~ /searxng\/searxng/ && $line =~ /(?<container_name>[a-z]+_[a-z]+\Z)/) {
       return $+{container_name};
     }
   }
