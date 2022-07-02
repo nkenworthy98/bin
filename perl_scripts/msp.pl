@@ -9,34 +9,42 @@ my $music_dir = "$ENV{'HOME'}/.Music";
 
 # CLI Flags/Variables
 my $append_flag = 0;
+my $prompt_str = 'Song(s)?';
 
 GetOptions(
-  'append|a' => \$append_flag,
+  'append|a' => \&set_append_and_prompt,
   'help|h' => sub { HelpMessage(0) },
 ) or HelpMessage(1);
 
 my @songs = grep { ! /\.git/ } `mpc listall`;
-my $dmenu_str = join('', @songs);
-my @selections = send_to_dmenu($dmenu_str);
+my $dmenu_songs_str = join('', @songs);
+my $selections_ref = pipe_to_dmenu($dmenu_songs_str, $prompt_str);
 
-if (@selections) {
- system("mpc clear") unless $append_flag;
- system("mpc", "add", @selections);
- system("mpc play") unless $append_flag;
+if (@{$selections_ref}) {
+  system("mpc clear") unless $append_flag;
+  system("mpc", "add", @{$selections_ref});
+  system("mpc play");
 }
 
-sub send_to_dmenu {
-  my ($string) = @_;
+sub pipe_to_dmenu {
+  my ($songs_str, $prompt_str) = @_;
 
   my @dmenu_selections = ();
-  my $pid = open2(my $child_out, my $child_in, 'dmenu -p "Song(s)?" -l 5 -i');
-  print $child_in $string;
-  close($child_in);
-  @dmenu_selections = <$child_out>;
+  my $pid = open2(my $reader, my $writer, "dmenu -p '$prompt_str' -l 5 -i");
+  print $writer $songs_str;
+  close($writer);
+  @dmenu_selections = <$reader>;
   chomp(@dmenu_selections);
-  close($child_out);
+  close($reader);
 
-  return @dmenu_selections;
+  return \@dmenu_selections;
+}
+
+# This should only be called by GetOptions
+sub set_append_and_prompt {
+  $append_flag = 1;
+  # Prepend 'Append' to the original prompt
+  $prompt_str = "Append $prompt_str";
 }
 
 =head1 NAME
