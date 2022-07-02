@@ -5,8 +5,6 @@ use warnings;
 use IPC::Open2;
 use Getopt::Long qw(GetOptions HelpMessage);
 
-my $music_dir = "$ENV{'HOME'}/.Music";
-
 # CLI Flags/Variables
 my $append_flag = 0;
 my $prompt_str = 'Song(s)?';
