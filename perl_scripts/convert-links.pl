@@ -2,7 +2,7 @@
 # This script converts links in your clipboard to their free alternatives
 # youtube to invidious
 # twitter to nitter
-# reddit to teddit
+# reddit to libreddit
 # instagram to bibliogram
 use strict;
 use warnings;
@@ -33,10 +33,8 @@ elsif ($link =~ /twitter\.com/) {
 }
 
 elsif ($link =~ /reddit\.com/) {
-  $link =~ s/reddit\.com/teddit\.net/;
-  # Use teddit's dark theme
-  $link = $link . "?theme=dark";
-  show_notification('Reddit', 'Teddit', '#FF4500');
+  $link =~ s/reddit\.com/libredd\.it/;
+  show_notification('Reddit', 'Libreddit', '#FF4500');
 }
 
 elsif ($link =~ /instagram\.com/) {

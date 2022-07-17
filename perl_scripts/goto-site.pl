@@ -2,7 +2,7 @@
 # Quickly navigate to various sites using dmenu
 # The following sites are supported:
 #   nitter
-#   teddit
+#   libreddit
 #   archwiki
 #   searx
 #
@@ -16,7 +16,7 @@ my $browser = 'firefox';
 
 my %sites_hash = (
   'nitter' => \&open_nitter_pages,
-  'teddit' => \&open_teddit_pages,
+  'libreddit' => \&open_libreddit_pages,
   'archwiki' => \&open_archwiki_pages,
   'searx' => \&open_searx_pages,
 );
@@ -95,23 +95,23 @@ sub open_nitter_pages {
   return \@nitter_urls;
 }
 
-sub open_teddit_pages {
-  # Open teddit home page if a subreddit isn't provided
-  my @teddit_subreddits = split(' ',`printf '' | dmenu -p 'Teddit Subreddit(s)?'`);
-  my @teddit_urls = ();
+sub open_libreddit_pages {
+  # Open libreddit home page if a subreddit isn't provided
+  my @libreddit_subreddits = split(' ',`printf '' | dmenu -p 'Libreddit Subreddit(s)?'`);
+  my @libreddit_urls = ();
 
-  foreach my $subreddit (@teddit_subreddits) {
-    my $url = "https://teddit.net/r/$subreddit?theme=dark";
+  foreach my $subreddit (@libreddit_subreddits) {
+    my $url = "https://libredd.it/r/$subreddit/";
 
-    push(@teddit_urls, $url);
+    push(@libreddit_urls, $url);
   }
 
-  # return teddit homepage if user doesn't enter subreddit in dmenu
-  if (! @teddit_subreddits) {
-    push(@teddit_urls, "https://teddit.net?theme=dark");
+  # return libreddit homepage if user doesn't enter subreddit in dmenu
+  if (! @libreddit_subreddits) {
+    push(@libreddit_urls, "https://libredd.it");
   }
 
-  return \@teddit_urls;
+  return \@libreddit_urls;
 }
 
 sub open_archwiki_pages {
