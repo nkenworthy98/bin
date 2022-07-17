@@ -27,6 +27,11 @@ if ($link =~ /youtube\.com/) {
   show_notification('YouTube', 'Invidious', '#FA0000');
 }
 
+elsif ($link =~ /youtu\.be\/(\w+)/) {
+  $link = "https://$invidious_instance/watch?v=$1";
+  show_notification('YouTube', 'Invidious', '#FA0000');
+}
+
 elsif ($link =~ /twitter\.com/) {
   $link =~ s/twitter\.com/$nitter_instance/;
   show_notification('Twitter', 'Nitter', '#FAFAFA');
