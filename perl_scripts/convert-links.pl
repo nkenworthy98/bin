@@ -1,11 +1,7 @@
 #!/usr/bin/perl
-# This script converts links in your clipboard to their free alternatives
-# youtube to invidious
-# twitter to nitter
-# reddit to libreddit
-# instagram to bibliogram
 use strict;
 use warnings;
+use Getopt::Long qw( GetOptions HelpMessage );
 
 chomp(my $link = `xclip -selection c -o`);
 
@@ -21,6 +17,29 @@ chomp(my $nitter_instance = `grni.sh`);
 
 # /u at the end is required in order to be brought to the correct page
 my $bibliogram_instance = "insta.trom.tf/u";
+
+# CLI Flags/Variables
+my $use_libreddit = 0;
+# Use teddit by default
+my $use_teddit = 1;
+
+GetOptions(
+  'help|h' => sub { HelpMessage(0) },
+  'libreddit|l' => \$use_libreddit,
+  'teddit|t' => \$use_teddit,
+) or HelpMessage(1);
+
+my $reddit_replace_url;
+my $reddit_replacement;
+
+if ($use_libreddit) {
+  $reddit_replace_url = "libredd.it";
+  $reddit_replacement = "libreddit";
+}
+elsif ($use_teddit) {
+  $reddit_replace_url = "teddit.net";
+  $reddit_replacement = "teddit";
+}
 
 if ($link =~ /youtube\.com/) {
   $link =~ s/youtube\.com/$invidious_instance/;
@@ -38,8 +57,8 @@ elsif ($link =~ /twitter\.com/) {
 }
 
 elsif ($link =~ /reddit\.com/) {
-  $link =~ s/reddit\.com/libredd\.it/;
-  show_notification('Reddit', 'Libreddit', '#FF4500');
+  $link =~ s/reddit\.com/$reddit_replace_url/;
+  show_notification('Reddit', ucfirst $reddit_replacement, '#FF4500');
 }
 
 elsif ($link =~ /instagram\.com/) {
@@ -68,3 +87,30 @@ sub send_link_to_clipboard {
   print $clipboard $link;
   close($clipboard) or die "Error closing $clipboard $!";
 }
+
+=head1 NAME
+
+convert-links.pl
+
+=head1 DESCRIPTION
+
+This script converts links in your clipboard to their free alternatives
+
+youtube to invidious
+
+twitter to nitter
+
+reddit to libreddit
+
+instagram to bibliogram
+
+=head1 SYNOPSIS
+
+convert-links.pl [OPTIONS]
+
+  -h, --help       Print this help and quit
+  -l, --libreddit  Use libreddit for reddit replacement
+  -t, --teddit     Use teddit for reddit replacement
+                     (note: this is the default reddit replacement)
+
+=cut
