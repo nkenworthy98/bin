@@ -84,15 +84,7 @@ sub create_printf_format_str {
 sub open_nitter_pages {
   # Open nitter home page if a username isn't provided
   my @nitter_usernames = split(' ',`printf '' | dmenu -p 'Nitter Username(s)?'`);
-  my @nitter_urls = ();
-
-  foreach my $user (@nitter_usernames) {
-    # different nitter instances for different nitter pages
-    chomp(my $nitter_base_url = `grni.sh`);
-    my $url = "https://$nitter_base_url/$user";
-
-    push(@nitter_urls, $url);
-  }
+  my @nitter_urls = map { nitter_instance_with_username($_) } @nitter_usernames;
 
   # User might not type a username, so return homepage
   if (! @nitter_usernames) {
@@ -104,15 +96,16 @@ sub open_nitter_pages {
   return \@nitter_urls;
 }
 
+sub nitter_instance_with_username {
+  my ($nitter_username) = @_;
+
+  chomp(my $nitter_base_url = `grni.sh`);
+  return "https://$nitter_base_url/$nitter_username";
+}
+
 sub open_libreddit_pages {
   my @libreddit_subreddits = split(' ',`printf '' | dmenu -p 'Libreddit Subreddit(s)?'`);
-  my @libreddit_urls = ();
-
-  foreach my $subreddit (@libreddit_subreddits) {
-    my $url = "https://libredd.it/r/$subreddit/";
-
-    push(@libreddit_urls, $url);
-  }
+  my @libreddit_urls = map { "https://libredd.it/r/$_" } @libreddit_subreddits;
 
   # return libreddit homepage if user doesn't enter subreddit in dmenu
   if (! @libreddit_subreddits) {
@@ -124,13 +117,7 @@ sub open_libreddit_pages {
 
 sub open_teddit_pages {
   my @teddit_subreddits = split(' ',`printf '' | dmenu -p 'Teddit Subreddit(s)?'`);
-  my @teddit_urls = ();
-
-  foreach my $subreddit (@teddit_subreddits) {
-    my $url = "https://teddit.net/r/$subreddit/";
-
-    push(@teddit_urls, $url);
-  }
+  my @teddit_urls = map { "https://teddit.net/r/$_/?theme=dark" } @teddit_subreddits;
 
   # return teddit homepage if user doesn't enter subreddit in dmenu
   if (! @teddit_subreddits) {
@@ -178,12 +165,8 @@ sub open_archwiki_title_pages {
   my ($archwiki_string) = @_;
 
   my @archwiki_pages = split(' ', $archwiki_string);
-  my @archwiki_urls = ();
-
-  foreach my $page (@archwiki_pages) {
-    my $url = "https://wiki.archlinux.org/title/$page?useskinversion=1";
-    push(@archwiki_urls, $url);
-  }
+  my @archwiki_urls = map { "https://wiki.archlinux.org/title/$_?useskinversion=1" }
+                      @archwiki_pages;
 
   return \@archwiki_urls;
 }
@@ -191,15 +174,13 @@ sub open_archwiki_title_pages {
 sub open_searx_pages {
   my $searx_string = `printf '' | dmenu -p 'Searx queries? (Separate searches with '!')'`;
   chomp($searx_string);
-  my @urls_searx = ();
 
+  # sub out spaces for +
   $searx_string =~ s/ /+/g;
   my @searxes = split('!', $searx_string);
 
-  foreach my $search_query (@searxes) {
-    my $url = "http://localhost:8888/search?q=$search_query";
-    push(@urls_searx, $url);
-  }
+  my @urls_searx = map { "http://localhost:8888/search?q=$_" }
+                   @searxes;
 
   return \@urls_searx;
 }
