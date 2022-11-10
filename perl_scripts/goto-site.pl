@@ -16,6 +16,7 @@ my $browser = 'firefox';
 
 my %sites_hash = (
   'nitter' => \&open_nitter_pages,
+  'invidious' => \&open_invidious_pages,
   'libreddit' => \&open_libreddit_pages,
   'teddit' => \&open_teddit_pages,
   'archwiki' => \&open_archwiki_pages,
@@ -82,7 +83,6 @@ sub create_printf_format_str {
 }
 
 sub open_nitter_pages {
-  # Open nitter home page if a username isn't provided
   my @nitter_usernames = split(' ',`printf '' | dmenu -p 'Nitter Username(s)?'`);
   my @nitter_urls = map { nitter_instance_with_username($_) } @nitter_usernames;
 
@@ -101,6 +101,28 @@ sub nitter_instance_with_username {
 
   chomp(my $nitter_base_url = `grni.sh`);
   return "https://$nitter_base_url/$nitter_username";
+}
+
+sub open_invidious_pages {
+  my @invidious_searches = split('!',`printf '' | dmenu -p 'Invidious Searches? (Separate searches with '!')'`);
+  my @invidious_urls = map { invidious_instance_with_search($_) } @invidious_searches;
+
+  # User might not type a search, so return homepage
+  if (! @invidious_searches) {
+    # grni.sh is a script that returns a random invidious instance
+    chomp(my $invidious_home_page = `grii.sh`);
+    push(@invidious_urls, $invidious_home_page);
+  }
+
+  return \@invidious_urls;
+}
+
+sub invidious_instance_with_search {
+  my ($invidious_search) = @_;
+
+  chomp(my $invidious_base_url = `grii.sh`);
+  (my $search_no_spaces = $invidious_search) =~ s/ /+/g;
+  return "https://$invidious_base_url/search?q=$search_no_spaces";
 }
 
 sub open_libreddit_pages {
