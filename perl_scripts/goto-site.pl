@@ -17,6 +17,7 @@ my $browser = 'firefox';
 my %sites_hash = (
   'nitter' => \&open_nitter_pages,
   'libreddit' => \&open_libreddit_pages,
+  'teddit' => \&open_teddit_pages,
   'archwiki' => \&open_archwiki_pages,
   'searx' => \&open_searx_pages,
 );
@@ -104,7 +105,6 @@ sub open_nitter_pages {
 }
 
 sub open_libreddit_pages {
-  # Open libreddit home page if a subreddit isn't provided
   my @libreddit_subreddits = split(' ',`printf '' | dmenu -p 'Libreddit Subreddit(s)?'`);
   my @libreddit_urls = ();
 
@@ -120,6 +120,24 @@ sub open_libreddit_pages {
   }
 
   return \@libreddit_urls;
+}
+
+sub open_teddit_pages {
+  my @teddit_subreddits = split(' ',`printf '' | dmenu -p 'Teddit Subreddit(s)?'`);
+  my @teddit_urls = ();
+
+  foreach my $subreddit (@teddit_subreddits) {
+    my $url = "https://teddit.net/r/$subreddit/";
+
+    push(@teddit_urls, $url);
+  }
+
+  # return teddit homepage if user doesn't enter subreddit in dmenu
+  if (! @teddit_subreddits) {
+    push(@teddit_urls, "https://teddit.net");
+  }
+
+  return \@teddit_urls;
 }
 
 sub open_archwiki_pages {
