@@ -36,8 +36,16 @@ foreach my $site_choice (@{$site_choices_ref}) {
   }
 }
 
+# Firefox is the only browser that I know supports the --new-tab option
+# Will open tabs in existing instance of firefox if one is running
+if (`pidof '$browser'` && $browser eq 'firefox') {
+  @urls = map { "--new-tab '$_'" } @urls;
+}
+
+my $urls_str = join(" ", @urls);
+
 if (@urls) {
-  exec($browser, @urls);
+  exec(qq( $browser $urls_str ));
 }
 
 sub ask_user_for_site {
