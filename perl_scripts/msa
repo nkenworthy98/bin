@@ -17,6 +17,7 @@ my $search_type = 'any';
 my $mpc_clear = 0;
 my $mpc_play = 0;
 my $enqueue = 0;
+my $insert = 0;
 my $number_of_results = 0;
 my $quiet = 0;
 my $show_cue_titles = 0;
@@ -28,6 +29,7 @@ GetOptions(
   'regex|r=s' => \$regex,
   'clear-queue|c' => \$mpc_clear,
   'enqueue|e' => \$enqueue,
+  'insert|i' => \$insert,
   'play-queue|p' => \$mpc_play,
   'number|n=i' => \$number_of_results,
   'quiet|q' => \$quiet,
@@ -102,7 +104,12 @@ unless ($quiet) {
   }
 }
 
-pipe_to_mpc_add(\@search_results) if $enqueue;
+if ($enqueue) {
+  pipe_to_mpc_add(\@search_results);
+}
+elsif ($insert) {
+  pipe_to_mpc_insert(\@search_results);
+}
 `mpc play` if $mpc_play;
 
 sub split_files_and_titles {
@@ -119,13 +126,25 @@ sub split_files_and_titles {
   return $file, $title;
 }
 
+sub pipe_to_mpc_cmd {
+  my ($songs_ref, $cmd) = @_;
+
+  open(my $mpc_pipe, "|-", "mpc $cmd")
+      or die "Problem opening pipe to mpc $cmd";
+  print $mpc_pipe @{$songs_ref};
+  close($mpc_pipe) or die "Problem closing pipe to mpc $cmd";
+}
+
 sub pipe_to_mpc_add {
   my ($songs_ref) = @_;
 
-  open(my $mpc_pipe, "|-", "mpc add")
-      or die "Problem opening pipe to mpc add";
-  print $mpc_pipe @{$songs_ref};
-  close($mpc_pipe) or die "Problem closing pipe to mpc add";
+  pipe_to_mpc_cmd($songs_ref, "add");
+}
+
+sub pipe_to_mpc_insert {
+  my ($songs_ref) = @_;
+
+  pipe_to_mpc_cmd($songs_ref, "insert");
 }
 
 =head1 NAME
@@ -147,6 +166,7 @@ If no SEARCH_QUERY, read standard input
   -r, --regex REGEX      Search filenames using regular expressions (requires a regex inside quotes)
   -c, --clear-queue      Clear song queue
   -e, --enqueue          Enqueue resulting songs
+  -i, --insert           Insert resulting songs
   -p, --play-queue       Play songs after they've been enqueued
   -n, --number NUM       Limit the number of resulting songs to at most NUM songs
   -q, --quiet            Don't print resulting songs to STDOUT
