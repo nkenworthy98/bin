@@ -7,20 +7,35 @@ use Getopt::Long qw(GetOptions HelpMessage);
 
 # CLI Flags/Variables
 my $append_flag = 0;
-my $prompt_str = 'Song(s)?';
+my $insert_flag = 0;
 
 GetOptions(
-  'append|a' => \&set_append_and_prompt,
+  'append|a' => sub { $append_flag = 1; },
   'help|h' => sub { HelpMessage(0) },
+  'insert|i' => sub { $insert_flag = 1; },
 ) or HelpMessage(1);
+
+my $prompt_str;
+if ($append_flag) {
+  $prompt_str = "Append Song(s)";
+}
+elsif ($insert_flag) {
+  $prompt_str = "Insert Song(s)";
+}
+else {
+  $prompt_str = "Song(s)";
+}
 
 my @songs = grep { ! /\.git/ } `mpc listall`;
 my $dmenu_songs_str = join('', @songs);
 my $selections_ref = pipe_to_dmenu($dmenu_songs_str, $prompt_str);
 
 if (@{$selections_ref}) {
-  system("mpc clear") unless $append_flag;
-  system("mpc", "add", @{$selections_ref});
+  system("mpc clear") unless ($append_flag || $insert_flag);
+
+  system("mpc", "add", @{$selections_ref}) unless $insert_flag;
+  system("mpc", "insert", @{$selections_ref}) if $insert_flag;
+
   system("mpc play");
 }
 
@@ -38,13 +53,6 @@ sub pipe_to_dmenu {
   return \@dmenu_selections;
 }
 
-# This should only be called by GetOptions
-sub set_append_and_prompt {
-  $append_flag = 1;
-  # Prepend 'Append' to the original prompt
-  $prompt_str = "Append $prompt_str";
-}
-
 =head1 NAME
 
 msp.pl - mpc search play
@@ -55,6 +63,7 @@ msp.pl [OPTION]
 
   -a, --append     Append selection(s) to current queue
   -h, --help       Print this help and exit
+  -i, --insert     Insert selection(s) to current queue
 
 For more detailed documentation, run C<perldoc msp.pl>
 
