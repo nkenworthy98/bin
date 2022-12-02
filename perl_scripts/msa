@@ -31,7 +31,12 @@ GetOptions(
   'play-queue|p' => \$mpc_play,
   'number|n=i' => \$number_of_results,
   'quiet|q' => \$quiet,
-  'new-queue|N' => \&set_new_queue_flags,
+  'new-queue|N' => sub {
+    $mpc_clear = 1;
+    $enqueue = 1;
+    $mpc_play = 1;
+    $quiet = 1;
+  },
   'show-cue-titles|t' => \$show_cue_titles,
   'exclude|x=s' => \$exclude_regex,
   'help|h' => sub { HelpMessage(0) },
@@ -50,30 +55,27 @@ elsif (! $regex) {
   chomp($search_query = <STDIN>);
 }
 
-# Filter out any lines containing .git directories that git-annex creates
-# Otherwise, half of the results are .git followed by hashes
-if ($regex) {
+my $list_songs_cmd = '';
+if ($show_cue_titles) {
   # Running mpc's --format (-f) option with listall significantly slows the
   # program down, so only include %title% if the --show-cue-titles flag is
   # passed
-  my $mpc_listall_command = '';
-  if ($show_cue_titles) {
-    $mpc_listall_command = 'mpc -f "%file% --- %title%" listall';
-  }
-  else {
-    $mpc_listall_command = 'mpc listall';
-  }
-
-  # Key is the filename and the value is the title
-  %search_results_hash = map { split_files_and_titles($_) }
-                         grep { ! /\.git\// && /$regex/i }
-                         `$mpc_listall_command`;
+  $list_songs_cmd = 'mpc -f "%file% --- %title%" listall';
 }
 elsif ($search_query) {
-  %search_results_hash = map { split_files_and_titles($_) }
-                         grep { ! /\.git\// }
-                         `mpc -f '%file% --- %title%' search $search_type '$search_query'`;
+  $list_songs_cmd = "mpc -f '%file% --- %title%' search $search_type '$search_query'";
 }
+else {
+  $list_songs_cmd = 'mpc listall';
+}
+
+# Filter out any lines containing .git directories that git-annex creates
+# Otherwise, half of the results are .git followed by hashes
+%search_results_hash = map { split_files_and_titles($_) }
+                       grep { ($exclude_regex) ? (! /$exclude_regex/i) : ($_) }
+                       grep { ($regex) ? (/$regex/i) : ($_) }
+                       grep { ! /\.git\// }
+                       `$list_songs_cmd`;
 
 @search_results = sort keys %search_results_hash;
 if ($shuffle) {
@@ -81,9 +83,6 @@ if ($shuffle) {
 }
 if ($number_of_results > 0 && $number_of_results <= $#search_results) {
   @search_results = @search_results[0..$number_of_results - 1];
-}
-if ($exclude_regex) {
-  @search_results = grep { ! /$exclude_regex/i } @search_results;
 }
 
 unless ($quiet) {
@@ -127,13 +126,6 @@ sub pipe_to_mpc_add {
       or die "Problem opening pipe to mpc add";
   print $mpc_pipe @{$songs_ref};
   close($mpc_pipe) or die "Problem closing pipe to mpc add";
-}
-
-sub set_new_queue_flags {
-  $mpc_clear = 1;
-  $enqueue = 1;
-  $mpc_play = 1;
-  $quiet = 1;
 }
 
 =head1 NAME
