@@ -24,24 +24,24 @@ my $show_cue_titles = 0;
 my $exclude_regex = '';
 
 GetOptions(
-  'filename|f' => sub { $search_type = 'filename' },
-  'shuffle|s' => \$shuffle,
-  'regex|r=s' => \$regex,
   'clear-queue|c' => \$mpc_clear,
   'enqueue|e' => \$enqueue,
+  'filename|f' => sub { $search_type = 'filename' },
+  'help|h' => sub { HelpMessage(0) },
   'insert|i' => \$insert,
-  'play-queue|p' => \$mpc_play,
   'number|n=i' => \$number_of_results,
-  'quiet|q' => \$quiet,
   'new-queue|N' => sub {
     $mpc_clear = 1;
     $enqueue = 1;
     $mpc_play = 1;
     $quiet = 1;
   },
+  'play-queue|p' => \$mpc_play,
+  'quiet|q' => \$quiet,
+  'regex|r=s' => \$regex,
+  'shuffle|s' => \$shuffle,
   'show-cue-titles|t' => \$show_cue_titles,
   'exclude|x=s' => \$exclude_regex,
-  'help|h' => sub { HelpMessage(0) },
 ) or HelpMessage(1);
 
 `mpc clear` if $mpc_clear;
@@ -161,21 +161,21 @@ msa [OPTIONS]... [SEARCH_QUERY]...
 
 If no SEARCH_QUERY, read standard input
 
-  -f, --filename         Search mpd database using a filename query
-  -s, --shuffle          Print search results in a shuffled/random order
-  -r, --regex REGEX      Search filenames using regular expressions (requires a regex inside quotes)
   -c, --clear-queue      Clear song queue
   -e, --enqueue          Enqueue resulting songs
+  -f, --filename         Search mpd database using a filename query
+  -h, --help             Print this help and exit
   -i, --insert           Insert resulting songs
-  -p, --play-queue       Play songs after they've been enqueued
   -n, --number NUM       Limit the number of resulting songs to at most NUM songs
-  -q, --quiet            Don't print resulting songs to STDOUT
   -N, --new-queue        Create a new queue by clearing queue, enqueueing new songs, and playing
                              (alias for --clear-queue, --enqueue, --quiet, and --play-queue)
+  -p, --play-queue       Play songs after they've been enqueued
+  -q, --quiet            Don't print resulting songs to STDOUT
+  -r, --regex REGEX      Search filenames using regular expressions (requires a regex inside quotes)
+  -s, --shuffle          Print search results in a shuffled/random order
   -t, --show-cue-titles  Print cue file titles if they are returned
                              (Note: this option will take precedence over --shuffle)
   -x, --exclude REGEX    Filter out results that match the regular expression (requires regex inside quotes)
-  -h, --help             Print this help and exit
 
 For more detailed documentation or examples, run C<perldoc msa>.
 
