@@ -10,9 +10,14 @@ my $search_query = '';
 my @search_results = ();
 my %search_results_hash = ();
 
+# Needed to check if optional Getopt::Long value is passed.
+# If value isn't passed with CLI argument, Getopt option will be passed an empty
+# string ''
+my $default_optional_str = '_DEFAULT_OPTIONAL_STRING_';
+
 # CLI Flags/Variables
 my $shuffle = 0;
-my $regex = '';
+my $regex = $default_optional_str;
 my $search_type = 'any';
 my $mpc_clear = 0;
 my $mpc_play = 0;
@@ -21,7 +26,7 @@ my $insert = 0;
 my $number_of_results = 0;
 my $quiet = 0;
 my $show_cue_titles = 0;
-my $exclude_regex = '';
+my $exclude_regex = $default_optional_str;
 
 GetOptions(
   'clear-queue|c' => \$mpc_clear,
@@ -38,23 +43,42 @@ GetOptions(
   },
   'play-queue|p' => \$mpc_play,
   'quiet|q' => \$quiet,
-  'regex|r=s' => \$regex,
+  'regex|r:s' => \$regex,
   'shuffle|s' => \$shuffle,
   'show-cue-titles|t' => \$show_cue_titles,
-  'exclude|x=s' => \$exclude_regex,
+  'exclude|x:s' => \$exclude_regex,
 ) or HelpMessage(1);
 
 `mpc clear` if $mpc_clear;
 
 # Get search query by either joining @ARGV or asking for input
-# Manual input isn't required if @ARGV is empty and --regex is set because the
-# string that's passed into regex acts as the search query
 if (@ARGV) {
   $search_query = join(' ', @ARGV);
 }
-elsif (! $regex) {
-  printf STDERR "MPC Search %s?\n", ucfirst $search_type;
-  chomp($search_query = <STDIN>);
+else {
+  if ($regex eq $default_optional_str) {
+    printf STDERR "MPC Search %s?\n", ucfirst $search_type;
+    chomp($search_query = <STDIN>);
+  }
+  # Getopt::Long allows optional values for CLI arguments
+  # If option is passed and value isn't provided on the command line, an empty
+  # string '' is assigned to the variable
+  if ($regex eq '') {
+    printf STDERR "Regex?\n";
+    chomp($regex = <STDIN>);
+  }
+  if ($exclude_regex eq '') {
+    printf STDERR "Exclude Regex?\n";
+    chomp($exclude_regex = <STDIN>);
+  }
+}
+
+# Make these variables empty if user didn't pass these options on command line
+if ($regex eq $default_optional_str) {
+  undef $regex;
+}
+if ($exclude_regex eq $default_optional_str) {
+  undef $exclude_regex;
 }
 
 my $list_songs_cmd = '';
@@ -171,11 +195,14 @@ If no SEARCH_QUERY, read standard input
                              (alias for --clear-queue, --enqueue, --quiet, and --play-queue)
   -p, --play-queue       Play songs after they've been enqueued
   -q, --quiet            Don't print resulting songs to STDOUT
-  -r, --regex REGEX      Search filenames using regular expressions (requires a regex inside quotes)
+  -r, --regex [REGEX]    Search filenames using regular expressions
+                             If REGEX isn't provided on command line, user will be prompted
   -s, --shuffle          Print search results in a shuffled/random order
   -t, --show-cue-titles  Print cue file titles if they are returned
                              (Note: this option will take precedence over --shuffle)
-  -x, --exclude REGEX    Filter out results that match the regular expression (requires regex inside quotes)
+  -x, --exclude [REGEX]  Filter out results that match the regular expression
+                             If REGEX isn't provided on command line, user will be prompted
+
 
 For more detailed documentation or examples, run C<perldoc msa>.
 
@@ -195,6 +222,11 @@ Prompt the user to enter in a string that will use mpc's search filename functio
 Any songs containing filenames with that string will be printed to the screen.
 
   $ msa -f
+
+Prompt the user to enter in a regular expression to search for and a regular expression to filter down the results.
+Any songs matching this criteria will be printed to the screen.
+
+  $ msa -r -x
 
 Any songs containing filenames with 'bites the dust' will be printed to the screen.
 Again, quotes are not required for strings separated by spaces.
