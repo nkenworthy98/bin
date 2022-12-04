@@ -34,7 +34,7 @@ if ($new_color ne $ENV{'MAIN_CUSTOM_COLOR'}) {
   change_main_custom_color_in_rc($new_color, $path_shellrc);
 }
 
-# change_tmux_colors($new_color, $path_tmux_conf);
+change_tmux_colors($new_color, $path_tmux_conf);
 # change_dwm_colors($new_color, $path_dwm);
 # change_dmenu_colors($new_color, $path_dmenu);
 # change_dunst_colors($new_color, $path_dunst_conf);
@@ -47,17 +47,6 @@ sub is_hex_color_code {
   # Returns 1 if passed in value is a valid hex color code
   # Else, returns 0
   return ($num =~ /\A#[0-9a-f]{6}\z/i);
-}
-
-sub change_main_custom_color_in_rc {
-  my ($color, $path_conf) = @_;
-
-  my %rc_changes = (
-    qr{^export MAIN_CUSTOM_COLOR='(#[0-9a-fA-F]{6})'} => $color,
-  );
-
-  update_file_with_changes($path_conf, \%rc_changes);
-
 }
 
 sub update_file_with_changes {
@@ -84,31 +73,28 @@ sub update_line_with_changes {
   return $line;
 }
 
+sub change_main_custom_color_in_rc {
+  my ($color, $path_conf) = @_;
+
+  my %rc_changes = (
+    qr{^export MAIN_CUSTOM_COLOR='(#[0-9a-fA-F]{6})'} => $color,
+  );
+
+  update_file_with_changes($path_conf, \%rc_changes);
+}
+
+
 sub change_tmux_colors {
   my ($color, $path_conf) = @_;
-  open(my $tmux_in, "<", $path_conf) or die "Can't open $path_conf: $!";
 
-  my @tmux_contents;
+  my %tmux_changes = (
+    qr{^set -g pane-active-border-style fg='(#[0-9a-f]{6})'}i => $color,
+    qr{^set-option -g status-style fg='(#[0-9a-f]{6})'}i => $color,
+    qr{^set-option -g message-style fg='(#[0-9a-f]{6})'}i => $color,
+    qr{^set -g status-right "#\[fg=(#[0-9a-f]{6})\]}i => $color,
+  );
 
-  # Substitute necessary lines to change foreground color of tmux status bar
-  while (<$tmux_in>) {
-    if (/set -g pane-active-border-style fg='#[0-9a-f]{6}'/i
-        || /set-option -g status-style fg='#[0-9a-f]{6}'/i
-        || /set-option -g message-style fg='#[0-9a-f]{6}'/i
-        || /set-option -g status-style fg='#[0-9a-f]{6}'/i
-        || /set -g status-right "#\[fg=#[0-9a-f]{6}\]%A, %d %b %Y %I:%M %p"/i) {
-      s/#[0-9a-f]{6}/$color/i;
-    }
-    push(@tmux_contents, $_);
-  }
-  close $tmux_in or die "$tmux_in: $!";
-
-  # Write all the lines to the same file
-  open(my $tmux_out, ">", $path_conf) or die "Can't open $path_conf: $!";
-  foreach (@tmux_contents) {
-    print $tmux_out $_;
-  }
-  close $tmux_out or die "$tmux_out: $!";
+  update_file_with_changes($path_conf, \%tmux_changes);
 }
 
 sub change_dunst_colors {
