@@ -16,6 +16,7 @@ my $path_shellrc = "$home/.zshrc";
 my $path_tmux_conf = "$home/.tmux.conf";
 my $path_dunst_conf = "$home/.config/dunst/dunstrc";
 my $path_ncmpcpp_conf = "$home/.config/ncmpcpp/config";
+my $path_irssi_conf = "$home/.config/irssi/default.theme";
 # The paths for the suckless programs expect to have a trailing "/"
 my $path_dwm = "$home/.sucklessPrograms/dwm/";
 my $path_dmenu = "$home/.sucklessPrograms/dmenu/";
@@ -40,6 +41,7 @@ change_dmenu_colors($new_color, $path_dmenu);
 change_dunst_colors($new_color, $path_dunst_conf);
 change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
 change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
+change_irssi_colors($new_color, $path_irssi_conf);
 
 sub is_hex_color_code {
   my $num = shift @_;
@@ -237,6 +239,21 @@ sub set_nnn_colors {
   # Convert the array to a string to be returned
   my $colors_string = join("", @nnn_colors);
   return $colors_string;
+}
+
+sub change_irssi_colors {
+  my ($color, $path_conf) = @_;
+
+  # irssi's colors don't have '#' before the color code
+  my $color_without_pound = $color =~ s/#//r;
+
+  # irssi will convert to closest 256 color
+  my %irssi_changes = (
+    qr{^  sb_background = "%z([0-9a-fA-F]{6})%w"} => $color_without_pound,
+    qr{^  window_border = "%z([0-9a-fA-F]{6})%w"} => $color_without_pound,
+  );
+
+  update_file_with_changes($path_conf, \%irssi_changes);
 }
 
 =head1 NAME
