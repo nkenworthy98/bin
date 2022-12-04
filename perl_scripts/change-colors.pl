@@ -39,7 +39,7 @@ change_dwm_colors($new_color, $path_dwm);
 change_dmenu_colors($new_color, $path_dmenu);
 change_dunst_colors($new_color, $path_dunst_conf);
 change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
-# change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
+change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
 
 sub is_hex_color_code {
   my $num = shift @_;
@@ -196,26 +196,15 @@ sub set_ncmpcpp_visualizer_colors {
 
 sub change_nnn_colors {
   my ($color, $path_conf) = @_;
-  open(my $nnn_in, "<", $path_conf) or die "Can't open $path_conf: $!";
 
   chomp(my $color_256 = `hex-to-256.pl --unweighted "$color"`);
-
   my $colors_replacement = set_nnn_colors($color_256);
-  my @nnn_contents;
 
-  while (<$nnn_in>) {
-    if (/\Aexport NNN_COLORS='(?<previous_colors>.*)'\Z/) {
-      s/$+{previous_colors}/$colors_replacement/;
-    }
-    push(@nnn_contents, $_);
-  }
-  close $nnn_in or die "$nnn_in: $!";
+  my %nnn_changes = (
+    qr{^export NNN_COLORS='(.*)'$} => $colors_replacement,
+  );
 
-  open(my $nnn_out, ">", $path_conf) or die "Can't open $path_conf: $!";
-  foreach (@nnn_contents) {
-    print $nnn_out $_;
-  }
-  close $nnn_out or die "$nnn_out: $!";
+  update_file_with_changes($path_conf, \%nnn_changes);
 }
 
 sub set_nnn_colors {
