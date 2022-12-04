@@ -38,7 +38,7 @@ change_tmux_colors($new_color, $path_tmux_conf);
 change_dwm_colors($new_color, $path_dwm);
 change_dmenu_colors($new_color, $path_dmenu);
 change_dunst_colors($new_color, $path_dunst_conf);
-# change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
+change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
 # change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
 
 sub is_hex_color_code {
@@ -143,7 +143,6 @@ sub change_dmenu_colors {
 
 sub change_ncmpcpp_colors {
   my ($color, $path_conf) = @_;
-  open(my $ncmpcpp_in, "<", $path_conf) or die "Can't open $path_conf: $!";
 
   # Rather than dealing with codes 0-255, ncmpcpp
   # deals with 1-256, so 1 needs to be added
@@ -155,36 +154,22 @@ sub change_ncmpcpp_colors {
   my @visualizer_colors = set_ncmpcpp_visualizer_colors($color_256);
   my $vc_replacement = join(",", @visualizer_colors);
 
-  my @ncmpcpp_contents;
-
-  while (<$ncmpcpp_in>) {
-    if (/\Avisualizer_color = (?<previous_colors>.*)\Z/) {
-      s/$+{previous_colors}/$vc_replacement/;
-    }
-
-    # Replace colors of various UI elements. See the comments below for
-    # example lines that will match with the regular expressions
-    #
+  # Replace colors of various UI elements. See the comments below for
+  # example lines that will match with the regular expressions
+  my %ncmpcpp_changes = (
+    qr{^visualizer_color = (.*)$}i => $vc_replacement,
     # main_window_color = 39
-    elsif (/\Amain_window_color = (?<previous_color>.*)\Z/
-           # song_columns_list_format = (20)[17]{a} (6f)[green]{NE} (50)[white]{t|f:Title} (20)[cyan]{b} (7f)[magenta]{l}
-           || /\Asong_columns_list_format = \(20\)\[(?<previous_color>.*)\]\{a\}/
-           # current_item_prefix = $(177)$r
-           || /\Acurrent_item_prefix = \$(?<previous_color>.*)\$r\Z/
-           # alternative_header_second_line_format = {{$(11)$b%a$/b$9}{ - $7%b$9}{ ($5%y$9)}}|{%D}
-           || /\Aalternative_header_second_line_format = \{\{\$\((?<previous_color>\d+)\)\$/) { # Assumes previous_color is inside parentheses in ncmpcpp config and is a number
-      s/$+{previous_color}/$color_256/;
-    }
-    push(@ncmpcpp_contents, $_);
-  }
-  close $ncmpcpp_in or die "$ncmpcpp_in: $!";
+    qr{^main_window_color = (.*)$}i => $color_256,
+    # song_columns_list_format = (20)[17]{a} (6f)[green]{NE} (50)[white]{t|f:Title} (20)[cyan]{b} (7f)[magenta]{l}
+    qr{^song_columns_list_format = \(20\)\[(.*)\]\{a\}}i => $color_256,
+    # current_item_prefix = $(177)$r
+    qr{^current_item_prefix = \$\((.*)\)\$r$}i => $color_256,
+    # alternative_header_second_line_format = {{$(11)$b%a$/b$9}{ - $7%b$9}{ ($5%y$9)}}|{%D}
+    # Assumes previous_color is inside parentheses in ncmpcpp config and is a number
+    qr{^alternative_header_second_line_format = \{\{\$\((\d+)\)\$}i => $color_256,
+  );
 
-  # Write contents back to ncmpcpp config
-  open(my $ncmpcpp_out, ">", $path_conf) or die "Can't open $path_conf: $!";
-  foreach (@ncmpcpp_contents) {
-    print $ncmpcpp_out $_;
-  }
-  close $ncmpcpp_out or die "$ncmpcpp_out: $!";
+  update_file_with_changes($path_conf, \%ncmpcpp_changes);
 
 }
 
