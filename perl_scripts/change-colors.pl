@@ -35,8 +35,8 @@ if ($new_color ne $ENV{'MAIN_CUSTOM_COLOR'}) {
 }
 
 change_tmux_colors($new_color, $path_tmux_conf);
-# change_dwm_colors($new_color, $path_dwm);
-# change_dmenu_colors($new_color, $path_dmenu);
+change_dwm_colors($new_color, $path_dwm);
+change_dmenu_colors($new_color, $path_dmenu);
 # change_dunst_colors($new_color, $path_dunst_conf);
 # change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
 # change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
@@ -127,25 +127,11 @@ sub change_dwm_colors {
   my ($color, $path) = @_;
   my $path_conf = $path . "config.h";
 
-  open(my $dwm_in, "<", $path_conf) or die "Can't open $path_conf: $!";
+  my %dwm_changes = (
+    qr{static const char col_cyan\[\]\s+= "(#[0-9a-f]{6})";}i => $color,
+  );
 
-  my @dwm_contents;
-
-  # Substitute the line with necessary change
-  while (<$dwm_in>) {
-    if (/static const char col_cyan\[\]\s+= "#[0-9a-f]{6}";/i) {
-      s/#[0-9a-f]{6}/$color/i;
-    }
-    push(@dwm_contents, $_);
-  }
-  close $dwm_in or die "$dwm_in: $!";
-
-  # Write all the lines to the same file
-  open(my $dwm_out, ">", $path_conf);
-  foreach (@dwm_contents) {
-    print $dwm_out $_;
-  }
-  close $dwm_out or die "$dwm_out: $!";
+  update_file_with_changes($path_conf, \%dwm_changes);
 
   # Compile and install dwm with changes
   chdir $path;
@@ -157,25 +143,11 @@ sub change_dmenu_colors {
   my ($color, $path) = @_;
   my $path_conf = $path . "config.h";
 
-  open(my $dmenu_in, "<", $path_conf) or die "Can't open $path_conf: $!";
+  my %dmenu_changes = (
+    qr{\[SchemeSel\] = \{ "#ffffff", "(#[0-9a-f]{6})" \}}i => $color,
+  );
 
-  my @dmenu_contents;
-
-  # Substitute the line with necessary change
-  while (<$dmenu_in>) {
-    if (/\[SchemeSel\] = \{ "#ffffff", "(?<previous_color>#[0-9a-f]{6})" \}/i) {
-      s/$+{previous_color}/$color/i;
-    }
-    push(@dmenu_contents, $_);
-  }
-  close $dmenu_in or die "$dmenu_in: $!";
-
-  # Write all the lines to the same file
-  open(my $dmenu_out, ">", $path_conf);
-  foreach (@dmenu_contents) {
-    print $dmenu_out $_;
-  }
-  close $dmenu_out or die "$dmenu_out: $!";
+  update_file_with_changes($path_conf, \%dmenu_changes);
 
   # Compile and install dmenu with changes
   chdir $path;
