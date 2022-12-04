@@ -37,7 +37,7 @@ if ($new_color ne $ENV{'MAIN_CUSTOM_COLOR'}) {
 change_tmux_colors($new_color, $path_tmux_conf);
 change_dwm_colors($new_color, $path_dwm);
 change_dmenu_colors($new_color, $path_dmenu);
-# change_dunst_colors($new_color, $path_dunst_conf);
+change_dunst_colors($new_color, $path_dunst_conf);
 # change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
 # change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
 
@@ -99,28 +99,14 @@ sub change_tmux_colors {
 
 sub change_dunst_colors {
   my ($color, $path_conf) = @_;
-  open (my $dunst_in, "<", $path_conf) or die "Can't open $path_conf";
 
-  my @dunst_contents;
-  my $is_first_instance = 1;
+  my %dunst_changes = (
+    # make sure '# global' comes after this line, so other instances of
+    # frame_color don't get changed
+    qr{frame_color = "(#[0-9a-f]{6})" # global}i => $color,
+  );
 
-  # Substitute only first instance of frame_color. There's another instance that is
-  # found in the urgency section, and I don't want it changed.
-  while (<$dunst_in>) {
-    if (/frame_color = "#[0-9a-f]{6}"/i && $is_first_instance) {
-      s/#[0-9a-f]{6}/$color/i;
-      $is_first_instance = 0;
-    }
-    push(@dunst_contents, $_);
-  }
-  close $dunst_in or die "$dunst_in: $!";
-
-  # Write contents back to dunstrc
-  open(my $dunst_out, ">", $path_conf) or die "Can't open $path_conf: $!";
-  foreach (@dunst_contents) {
-    print $dunst_out $_;
-  }
-  close $dunst_out or die "$dunst_out: $!";
+  update_file_with_changes($path_conf, \%dunst_changes);
 }
 
 sub change_dwm_colors {
