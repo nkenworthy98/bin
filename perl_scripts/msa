@@ -82,14 +82,14 @@ if ($exclude_regex eq $default_optional_str) {
 }
 
 my $list_songs_cmd = '';
-if ($show_cue_titles) {
+if ($search_query) {
+  $list_songs_cmd = "mpc -f '%file% --- %title%' search $search_type '$search_query'";
+}
+elsif ($show_cue_titles) {
   # Running mpc's --format (-f) option with listall significantly slows the
   # program down, so only include %title% if the --show-cue-titles flag is
   # passed
   $list_songs_cmd = 'mpc -f "%file% --- %title%" listall';
-}
-elsif ($search_query) {
-  $list_songs_cmd = "mpc -f '%file% --- %title%' search $search_type '$search_query'";
 }
 else {
   $list_songs_cmd = 'mpc listall';
