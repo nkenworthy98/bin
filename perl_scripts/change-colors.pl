@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Getopt::Long qw(GetOptions HelpMessage);
+use File::Slurper qw(read_lines write_text);
 
 # MAIN_CUSTOM_COLOR environment variable is expected to be
 # set in your shell's rc file in the following format:
@@ -33,12 +34,12 @@ if ($new_color ne $ENV{'MAIN_CUSTOM_COLOR'}) {
   change_main_custom_color_in_rc($new_color, $path_shellrc);
 }
 
-change_tmux_colors($new_color, $path_tmux_conf);
-change_dwm_colors($new_color, $path_dwm);
-change_dmenu_colors($new_color, $path_dmenu);
-change_dunst_colors($new_color, $path_dunst_conf);
-change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
-change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
+# change_tmux_colors($new_color, $path_tmux_conf);
+# change_dwm_colors($new_color, $path_dwm);
+# change_dmenu_colors($new_color, $path_dmenu);
+# change_dunst_colors($new_color, $path_dunst_conf);
+# change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
+# change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
 
 sub is_hex_color_code {
   my $num = shift @_;
@@ -51,19 +52,36 @@ sub is_hex_color_code {
 sub change_main_custom_color_in_rc {
   my ($color, $path_conf) = @_;
 
-  open(my $shellrc_in, '<', $path_conf) or die "Can't open $path_conf: $!";
-  my @shellrc_contents;
-  while (<$shellrc_in>) {
-    if (/\Aexport MAIN_CUSTOM_COLOR='(?<previous_color>#[0-9a-fA-F]{6})'/) {
-      s/$+{previous_color}/$color/;
-    }
-    push(@shellrc_contents, $_);
-  }
-  close $shellrc_in or die "$shellrc_in: $!";
+  my %rc_changes = (
+    qr{^export MAIN_CUSTOM_COLOR='(#[0-9a-fA-F]{6})'} => $color,
+  );
 
-  open(my $shellrc_out, '>', $path_conf) or die "Can't open $path_conf: $!";
-  print $shellrc_out @shellrc_contents;
-  close $shellrc_out or die "$shellrc_out: $!";
+  update_file_with_changes($path_conf, \%rc_changes);
+
+}
+
+sub update_file_with_changes {
+  my ($file, $changes_hashref) = @_;
+
+  print "Updating '$file'...\n";
+
+  my @original_lines = read_lines($file);
+  my @changed_lines = map { update_line_with_changes($_, $changes_hashref) } @original_lines;
+  write_text($file, join("\n", @changed_lines));
+
+  print "Successfully updated '$file'\n"
+}
+
+sub update_line_with_changes {
+  my ($line, $changes_hashref) = @_;
+
+  foreach my $key (keys %{$changes_hashref}) {
+    if ($line =~ $key) {
+      $line =~ s/$1/$changes_hashref->{$key}/;
+    }
+  }
+
+  return $line;
 }
 
 sub change_tmux_colors {
