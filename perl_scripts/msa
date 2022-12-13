@@ -10,14 +10,9 @@ my $search_query = '';
 my @search_results = ();
 my %search_results_hash = ();
 
-# Needed to check if optional Getopt::Long value is passed.
-# If value isn't passed with CLI argument, Getopt option will be passed an empty
-# string ''
-my $default_optional_str = '_DEFAULT_OPTIONAL_STRING_';
-
 # CLI Flags/Variables
 my $shuffle = 0;
-my $regex = $default_optional_str;
+my $regex;
 my $search_type = 'any';
 my $mpc_clear = 0;
 my $mpc_play = 0;
@@ -26,7 +21,7 @@ my $insert = 0;
 my $number_of_results = 0;
 my $quiet = 0;
 my $show_cue_titles = 0;
-my $exclude_regex = $default_optional_str;
+my $exclude_regex;
 
 GetOptions(
   'clear-queue|c' => \$mpc_clear,
@@ -56,29 +51,21 @@ if (@ARGV) {
   $search_query = join(' ', @ARGV);
 }
 else {
-  if ($regex eq $default_optional_str) {
+  if (! defined $regex) {
     printf STDERR "MPC Search %s?\n", ucfirst $search_type;
     chomp($search_query = <STDIN>);
   }
   # Getopt::Long allows optional values for CLI arguments
   # If option is passed and value isn't provided on the command line, an empty
   # string '' is assigned to the variable
-  if ($regex eq '') {
+  if (defined $regex && $regex eq '') {
     printf STDERR "Regex?\n";
     chomp($regex = <STDIN>);
   }
-  if ($exclude_regex eq '') {
+  if (defined $exclude_regex && $exclude_regex eq '') {
     printf STDERR "Exclude Regex?\n";
     chomp($exclude_regex = <STDIN>);
   }
-}
-
-# Make these variables empty if user didn't pass these options on command line
-if ($regex eq $default_optional_str) {
-  undef $regex;
-}
-if ($exclude_regex eq $default_optional_str) {
-  undef $exclude_regex;
 }
 
 my $list_songs_cmd = '';
@@ -98,8 +85,8 @@ else {
 # Filter out any lines containing .git directories that git-annex creates
 # Otherwise, half of the results are .git followed by hashes
 %search_results_hash = map { split_files_and_titles($_) }
-                       grep { ($exclude_regex) ? (! /$exclude_regex/i) : ($_) }
-                       grep { ($regex) ? (/$regex/i) : ($_) }
+                       grep { (defined $exclude_regex) ? (! /$exclude_regex/i) : ($_) }
+                       grep { (defined $regex) ? (/$regex/i) : ($_) }
                        grep { ! /\.git\// }
                        `$list_songs_cmd`;
 
