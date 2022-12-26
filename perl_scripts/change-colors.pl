@@ -58,7 +58,7 @@ sub update_file_with_changes {
 
   my @original_lines = read_lines($file);
   my @changed_lines = map { update_line_with_changes($_, $changes_hashref) } @original_lines;
-  write_text($file, join("\n", @changed_lines));
+  write_text($file, join("\n", @changed_lines) . "\n");
 
   print "Successfully updated '$file'\n"
 }
