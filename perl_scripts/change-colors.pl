@@ -90,6 +90,7 @@ sub change_tmux_colors {
   my ($color, $path_conf) = @_;
 
   my %tmux_changes = (
+    qr{^set-window-option -g mode-style bg='(#[0-9a-f]{6})'}i => $color,
     qr{^set -g pane-active-border-style fg='(#[0-9a-f]{6})'}i => $color,
     qr{^set-option -g status-style fg='(#[0-9a-f]{6})'}i => $color,
     qr{^set-option -g message-style fg='(#[0-9a-f]{6})'}i => $color,
