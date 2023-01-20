@@ -45,21 +45,21 @@ foreach my $file (@lossless_files) {
     next;
   }
 
+  my ($vol, $parsed_dir, $parsed_file) = File::Spec->splitpath($lossy_file);
+
+  if (! -d $parsed_dir) {
+      mkpath($parsed_dir);
+  }
+
   if (is_flac($file)) {
-    my $converted_filename = $lossy_file;
+    # my $converted_filename = $lossy_file;
 
     # Copy so the substitution doesn't change the $file variable
     print "Converting '$file'...\n";
-    $converted_filename =~ s/\.flac$/\.opus/g;
+    # $converted_filename =~ s/\.flac$/\.opus/g;
+    $parsed_file =~ s/\.flac$/\.opus/;
 
-    my ($vol, $converted_dir, $converted_file) = File::Spec->splitpath($converted_filename);
-
-    if (! -d $converted_dir) {
-        mkpath($converted_dir);
-    }
-
-    # my $output = `opusenc '$file' "$output_path"`;
-    system("opusenc", $file, $converted_dir . $converted_file);
+    system("opusenc", $file, "$parsed_dir/$parsed_file");
   }
   else {
     print "Copying non-flac file '$file' to '$lossy_file'...";
