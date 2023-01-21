@@ -15,25 +15,12 @@ my $lossy_prefix = "$music_prefix/lossy";
 
 my $relative_path = $ARGV[0];
 my $specified_path = Cwd::abs_path($relative_path);
-# print "relative: $relative_path\n";
-
-#if ($relative_path !~ $lossless_prefix) {
-#if (! -d "$lossless_prefix/$relative_path") {
-#die "Error: '$lossless_prefix/$relative_path' is not a valid path: $!";
-#}
-
-# print "$lossless_prefix/jazz/Art Tatum/\n";
 
 # Ignore git directories from git-annex
 my @lossless_files =
   grep { /^$lossless_prefix/ }
   grep { ! /\.git\// }
   File::Find::Rule->file()->in($specified_path);
-  # File::Find::Rule->file()->in($lossless_prefix . "/jazz/Art Tatum");
-  # File::Find::Rule->file()->name()->in($lossless_prefix);
-  # File::Find::Rule->file()->name('*.flac')->in($lossless_prefix);
-
-# print "$_\n" for @lossless_files;
 
 foreach my $file (@lossless_files) {
 
@@ -52,13 +39,8 @@ foreach my $file (@lossless_files) {
   }
 
   if (is_flac($file)) {
-    # my $converted_filename = $lossy_file;
-
-    # Copy so the substitution doesn't change the $file variable
     print "Converting '$file'...\n";
-    # $converted_filename =~ s/\.flac$/\.opus/g;
     $parsed_file =~ s/\.flac$/\.opus/;
-
     system("opusenc", $file, "$parsed_dir/$parsed_file");
   }
   else {
