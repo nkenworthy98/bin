@@ -31,6 +31,13 @@ my @valid_numbers = ();
 
 foreach my $value (@ARGV) {
   if (is_valid_number($value)) {
+
+    # Prepend 0 if user decides to pass in hex with just 'x'
+    # For example, user passing x29 will be 0x29
+    if ($value =~ /^x[0-9a-f]+/i) {
+      $value = "0$value";
+    }
+
     push(@valid_numbers, $value);
   }
   else {
