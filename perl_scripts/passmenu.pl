@@ -8,6 +8,8 @@ use Getopt::Long qw(:config no_ignore_case);
 
 # CLI Flags/Variables
 my $type_username_and_password_flag = 0;
+my $type_url_flag = 0;
+my $copy_url_flag = 0;
 my $type_otp_flag = 0;
 my $copy_otp_flag = 0;
 my $type_password_flag = 0;
@@ -18,6 +20,8 @@ my $copy_username_flag = 0;
 GetOptions(
     'type-username-and-password|a' => \$type_username_and_password_flag,
     'help|h' => sub { HelpMessage(0) },
+    'type-url|l' => \$type_url_flag,
+    'copy-url|L' => \$copy_url_flag,
     'type-otp|o' => \$type_otp_flag,
     'copy-otp|O' => \$copy_otp_flag,
     'type-password|p' => \$type_password_flag,
@@ -50,6 +54,9 @@ my $pass_info_hashref = get_pass_info(\@file_contents, $selection);
 if ($type_username_and_password_flag) {
     type_username_and_password($pass_info_hashref);
 }
+elsif ($type_url_flag) {
+    xdotool_type($pass_info_hashref->{'url'});
+}
 elsif ($type_otp_flag) {
     xdotool_type($pass_info_hashref->{'otp'});
 }
@@ -58,6 +65,9 @@ elsif ($type_password_flag) {
 }
 elsif ($type_username_flag) {
     xdotool_type($pass_info_hashref->{'username'});
+}
+elsif ($copy_url_flag) {
+    copy_to_clipboard($pass_info_hashref->{'url'});
 }
 elsif ($copy_otp_flag) {
     system("pass", "otp", "-c", $selection);
@@ -79,7 +89,7 @@ sub type_username_and_password {
         xdotool_type($pass_info_hashref->{'username'} . "\t" . $pass_info_hashref->{'password'});
     }
     else {
-        die "Error: missing username from '$selection'.";
+        die "Error: missing username or password from the entry you selected: $!";
     }
 }
 
@@ -125,6 +135,9 @@ sub get_pass_info {
     foreach my $line (@{$contents_ref}) {
         if ($line =~ /^(?:user.*|login): ?(.*)$/i) {
             $pass_info{'username'} = $1;
+        }
+        elsif ($line =~ /^url: ?(.*)$/) {
+            $pass_info{'url'} = $1;
         }
     }
 
@@ -192,6 +205,8 @@ passmenu.pl [OPTION]
 
   -a, --type-username-and-password    Type both username and password
   -h, --help                          Print this help menu and quit
+  -l, --type-url                      Type url
+  -L, --copy-url                      Copy url to clipboard
   -o, --type-otp                      Type otp code
   -O, --copy-otp                      Copy otp code to clipboard
   -p, --type-password                 Type password
