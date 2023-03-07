@@ -1,0 +1,5 @@
+#!/bin/sh
+# Set new colors based on wallpaper
+
+NEW_COLOR=$(pixel.pl "$HOME/.config/wallpaper.jpg" -qqq -n 100 | fzf --ansi | cut -d' ' -f1)
+change-colors.pl --color "$NEW_COLOR"
