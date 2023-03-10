@@ -41,7 +41,7 @@ elsif ($use_teddit) {
   $reddit_replacement = "teddit";
 }
 
-if ($link =~ /youtube\.com/) {
+if ($link =~ m{youtube\.com(?!/clip/)}) {
   $link =~ s/youtube\.com/$invidious_instance/;
   show_notification('YouTube', 'Invidious', '#FA0000');
 }
