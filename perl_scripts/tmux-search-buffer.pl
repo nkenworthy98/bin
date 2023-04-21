@@ -46,7 +46,19 @@ sub prompt_and_filter_lines {
         chomp($line);
         if ($line =~ /($regex)/i) {
             my $colored_match = colored($1, 'bold red');
+
+            # my @matches = ($line =~ /($regex)/gi);
+            # foreach my $match (@matches) {
+
+            # }
             $line =~ s/\Q$1\E/$colored_match/;
+            my $part_of_line;
+
+            if ($line =~ m{^(.*\Q$colored_match\E)}) {
+                $part_of_line = $1;
+            }
+
+            print "part of line: $part_of_line\n";
             push(@matching_lines, $line);
         }
     }
