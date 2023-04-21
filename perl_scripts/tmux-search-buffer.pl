@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Long qw(GetOptions HelpMessage);
+use Term::ANSIColor qw(colored);
 
 my $tmp_file = '/tmp/tmux-search-buffer.txt';
 my $tmux_active_regex = qr{^(\d+):.*?\(active\)};
@@ -44,6 +45,8 @@ sub prompt_and_filter_lines {
     while (my $line = <$fh>) {
         chomp($line);
         if ($line =~ /($regex)/i) {
+            my $colored_match = colored($1, 'bold red');
+            $line =~ s/\Q$1\E/$colored_match/;
             push(@matching_lines, $line);
         }
     }
