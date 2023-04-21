@@ -84,3 +84,24 @@ sub prompt_and_filter_lines {
 
     return \@matching_lines;
 }
+
+=head1 NAME
+
+tmux-search-buffer.pl
+
+=head1 DESCRIPTION
+
+Capture the contents of the current tmux pane and write to a tmp file
+(/tmp/tmux-search-buffer.txt).
+Next, open a new window, and prompt the user to type in a regular expression.
+Matching substrings will be printed in color.
+
+=head1 SYNOPSIS
+
+  -h, --help    Print this help and quit
+  -p, --prompt  Prompt the user for a regex to parse capture-pane contents
+                    (note: parses /tmp/tmux-search-buffer.txt)
+
+For more detailed documentation, run C<perldoc tmux-search-buffer.pl>
+
+=cut
