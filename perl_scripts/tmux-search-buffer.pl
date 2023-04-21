@@ -45,21 +45,37 @@ sub prompt_and_filter_lines {
     while (my $line = <$fh>) {
         chomp($line);
         if ($line =~ /($regex)/i) {
-            my $colored_match = colored($1, 'bold red');
+            my @matches = ($line =~ /($regex)/gi);
+            my @parts;
 
-            # my @matches = ($line =~ /($regex)/gi);
-            # foreach my $match (@matches) {
+            foreach my $match (@matches) {
+                my $colored_match = colored($match, 'bold red');
+                $line =~ s/\Q$match\E/$colored_match/;
 
-            # }
-            $line =~ s/\Q$1\E/$colored_match/;
-            my $part_of_line;
+                my $part_of_line;
+                if ($line =~ m{^(.*\Q$colored_match\E)}i) {
+                    $part_of_line = $1;
+                    push(@parts, $part_of_line);
+                }
 
-            if ($line =~ m{^(.*\Q$colored_match\E)}) {
-                $part_of_line = $1;
+                # When trying to implement this, I ran into issues where running
+                # a color substitution with =~ s/$match/$colored_match/gi would
+                # result in the substitution happening on strings that already
+                # had colors applied to them
+                #
+                # remove part of line through $colored_match, so the remaining
+                # matches can continue to be highlighted without affecting the
+                # substrings that have already been highlighted
+                if ($part_of_line) {
+                    $line =~ s/\Q$part_of_line\E//;
+                }
             }
 
-            print "part of line: $part_of_line\n";
-            push(@matching_lines, $line);
+            # add the remaining part of the line that doesn't have any more
+            # matches
+            push(@parts, $line);
+            my $colored_line = join('', @parts);
+            push(@matching_lines, $colored_line);
         }
     }
 
