@@ -34,9 +34,12 @@ sub parse_number_at_line_start {
 sub prompt_and_filter_lines {
     my ($file) = @_;
 
-    print STDERR "Search?\n";
-    my $regex = <STDIN>;
-    chomp($regex);
+    my $regex;
+    unless ($regex = $ARGV[0]) {
+        print STDERR "Search?\n";
+        $regex = <STDIN>;
+        chomp($regex);
+    }
 
     my @matching_lines;
     open (my $fh, '<', $file)
@@ -44,7 +47,7 @@ sub prompt_and_filter_lines {
 
     while (my $line = <$fh>) {
         chomp($line);
-        if ($line =~ /($regex)/i) {
+        if ($line =~ /$regex/i) {
             my @matches = ($line =~ /($regex)/gi);
             my @parts;
 
@@ -52,23 +55,23 @@ sub prompt_and_filter_lines {
                 my $colored_match = colored($match, 'bold red');
                 $line =~ s/\Q$match\E/$colored_match/;
 
-                my $part_of_line;
-                if ($line =~ m{^(.*\Q$colored_match\E)}i) {
-                    $part_of_line = $1;
-                    push(@parts, $part_of_line);
-                }
+                # # When trying to implement this, I ran into issues where running
+                # # a color substitution with =~ s/$match/$colored_match/gi would
+                # # result in the substitution happening on strings that already
+                # # had colors applied to them
+                # #
+                # # remove part of line through $colored_match, so the remaining
+                # # matches can continue to be highlighted without affecting the
+                # # substrings that have already been highlighted
+                my $colored_index = index($line, $colored_match);
+                my $colored_match_len = length($colored_match);
+                my $index_after_match = $colored_index + $colored_match_len;
+                my $part_with_match = substr($line, 0, $index_after_match);
+                my $remaining_part = substr($line, $index_after_match);
 
-                # When trying to implement this, I ran into issues where running
-                # a color substitution with =~ s/$match/$colored_match/gi would
-                # result in the substitution happening on strings that already
-                # had colors applied to them
-                #
-                # remove part of line through $colored_match, so the remaining
-                # matches can continue to be highlighted without affecting the
-                # substrings that have already been highlighted
-                if ($part_of_line) {
-                    $line =~ s/\Q$part_of_line\E//;
-                }
+                push(@parts, $part_with_match);
+                $line = $remaining_part;
+
             }
 
             # add the remaining part of the line that doesn't have any more
