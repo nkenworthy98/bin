@@ -10,8 +10,7 @@ my $tmux_active_regex = qr{^(\d+):.*?\(active\)};
 GetOptions(
     'help|h' => sub { HelpMessage(0) },
     'prompt|p' => sub {
-        my $lines_ref = prompt_and_filter_lines($tmp_file);
-        print "$_\n" for @{$lines_ref};
+        prompt_and_filter_lines($tmp_file);
         exit;
     },
 ) or HelpMessage(1);
@@ -41,7 +40,6 @@ sub prompt_and_filter_lines {
         chomp($regex);
     }
 
-    my @matching_lines;
     open (my $fh, '<', $file)
         or die "Error when opening $file: $!";
 
@@ -53,13 +51,11 @@ sub prompt_and_filter_lines {
 
             foreach my $match (@matches) {
                 my $colored_match = colored($match, 'bold red');
-                $line =~ s/\Q$match\E/$colored_match/;
 
-                # # When trying to implement this, I ran into issues where running
-                # # a color substitution with =~ s/$match/$colored_match/gi would
-                # # result in the substitution happening on strings that already
-                # # had colors applied to them
-                # #
+                my $match_index = index($line, $match);
+                my $match_len = length($match);
+                substr($line, $match_index, $match_len, $colored_match);
+
                 # # remove part of line through $colored_match, so the remaining
                 # # matches can continue to be highlighted without affecting the
                 # # substrings that have already been highlighted
@@ -78,14 +74,12 @@ sub prompt_and_filter_lines {
             # matches
             push(@parts, $line);
             my $colored_line = join('', @parts);
-            push(@matching_lines, $colored_line);
+            print $colored_line, "\n";
         }
     }
 
     close($fh)
         or die "Error when closing $file: $!";
-
-    return \@matching_lines;
 }
 
 =head1 NAME
