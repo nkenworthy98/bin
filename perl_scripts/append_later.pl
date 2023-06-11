@@ -12,23 +12,26 @@ if ($ENV{'TMUX'}) {
     my @pane_contents = `tmux capture-pane -J -p`;
     chomp(@pane_contents);
 
-    my $feed = parse_associated_value(\@pane_contents, "Feed");
-    my $title = parse_associated_value(\@pane_contents, "Title");
-    my $author = parse_associated_value(\@pane_contents, "Author");
-    my $date = parse_associated_value(\@pane_contents, "Date");
-    my $link = parse_associated_value(\@pane_contents, "Link");
+    my %article_info;
+    $article_info{'feed'} = parse_associated_value(\@pane_contents, "Feed");
+    $article_info{'title'} = parse_associated_value(\@pane_contents, "Title");
+    $article_info{'author'} = parse_associated_value(\@pane_contents, "Author");
+    $article_info{'date'} = parse_associated_value(\@pane_contents, "Date");
+    $article_info{'link'} = parse_associated_value(\@pane_contents, "Link");
 
     my @output;
-    my $todo_line = "* TODO [[$link][$title]]\n";
+    my $todo_line = "* TODO [[$article_info{'link'}][$article_info{'title'}]]\n";
     my $scheduled_line = "SCHEDULED: <$date_str>\n";
     push(@output, $todo_line);
     push(@output, $scheduled_line);
     push(@output, ":PROPERTIES:\n");
-    push(@output, ":Feed: $feed\n");
-    push(@output, ":Title: $title\n");
-    push(@output, ":Author: $author\n");
-    push(@output, ":Date: $date\n");
-    push(@output, ":Link: $link\n");
+
+    foreach my $key (sort keys %article_info) {
+        if (exists $article_info{$key} && $article_info{$key}) {
+            push(@output, sprintf(":%s: %s\n", ucfirst $key, $article_info{$key}));
+        }
+    }
+
     push(@output, ":END:\n");
 
     open (my $fh, '>>', $later_file)
@@ -41,7 +44,7 @@ if ($ENV{'TMUX'}) {
     close($fh)
         or die "Error closing $later_file";
 
-    print "$title appended to $later_file\n";
+    print "$article_info{'title'} appended to $later_file\n";
 }
 
 sub parse_associated_value {
@@ -52,6 +55,4 @@ sub parse_associated_value {
             return $1;
         }
     }
-
-    die "$str associated value not found";
 }
