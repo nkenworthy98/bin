@@ -3,7 +3,6 @@
 # Appends a new watch/read later entry to my org file
 use strict;
 use warnings;
-use List::Util qw(first);
 
 my $date_str = `date "+%F %a"`;
 chomp($date_str);
