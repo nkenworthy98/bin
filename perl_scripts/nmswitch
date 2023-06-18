@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long qw(GetOptions);
+use Pod::Usage qw(pod2usage);
+
+GetOptions(
+    'help|h' => sub { pod2usage(0) },
+    'list-connections|l' => sub {
+        system("nmcli connection show");
+        exit 0;
+    },
+) or pod2usage(1);
+
+my @connections_list = `nmcli --terse connection show`;
+chomp(@connections_list);
+
+my @connection_names;
+foreach my $line (@connections_list) {
+    my ($connection_name) = split(/:/, $line);
+    push(@connection_names, $connection_name);
+}
+
+my $connection = $ARGV[0];
+if (! $connection) {
+    die "Must provide a network to connect to: $!";
+}
+
+if (! is_valid_connection($connection, \@connection_names)) {
+    my $die_msg = <<"END_DIE_MESSAGE";
+'$connection' is not a valid network to connect to.
+See 'nmswitch --list-connections' for a list of valid connections.
+END_DIE_MESSAGE
+    die $die_msg;
+}
+
+print "Attempting to connect to '$connection'...\n";
+system("nmcli connection up '$connection'");
+
+sub is_valid_connection {
+    my ($connection_str, $connection_names_ref) = @_;
+
+    return grep { /^$connection_str$/ } @{$connection_names_ref};
+}
+
+=head1 NAME
+
+nmswitch - network manager switch
+
+=head1 DESCRIPTION
+
+Script to quickly switch between known network connections
+
+=head1 SYNOPSIS
+
+nmswitch [OPTION] <CONNECTION>
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h, --help>
+
+Print this help menu and quit
+
+=item B<-l, --list-connections>
+
+Print the list of connections and quit
+
+=back
+
+For more detailed documentation, run C<perldoc nmswitch>
+
+=cut
