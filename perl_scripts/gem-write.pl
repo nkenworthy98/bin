@@ -24,9 +24,9 @@ my $address_step = hex '0x10';
 my $gem_step = hex '0x1';
 
 foreach my $mult (0..$gems_to_change) {
-    my $text = sprintf "write bytearray %s %s",
-        sprintf("%x", $last_address - ($mult * $address_step)),
-        sprintf("%x", $best_gem_id_hex - ($mult * $gem_step));
+    my $text = sprintf "write bytearray %x %x",
+        $last_address - ($mult * $address_step),
+        $best_gem_id_hex - ($mult * $gem_step);
 
     system(qq(tmux send-keys '$text' Enter\;))
 }

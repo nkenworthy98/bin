@@ -44,8 +44,8 @@ if (get_last_char($start_address) ne get_last_char($end_address)) {
 
 my $hex_line_diff = $address_diff / $hex_line;
 foreach my $mult (0..$hex_line_diff) {
-    my $text = sprintf "write bytearray %s 63",
-        sprintf("%x", $dec_start_address + ($mult * $hex_line));
+    my $text = sprintf "write bytearray %x 63",
+        $dec_start_address + ($mult * $hex_line);
 
     system(qq(tmux send-keys '$text' Enter\;))
 }
