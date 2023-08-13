@@ -28,7 +28,7 @@ my $dec_end_address = hex $end_address;
 my $hex_line = hex '0x10';
 
 if ($dec_start_address >= $dec_end_address) {
-    die "start address ($start_address) must be greater than end address ($end_address): $!";
+    die "start address ($start_address) must come before end address ($end_address): $!";
 }
 
 my $address_diff = $dec_end_address - $dec_start_address;
