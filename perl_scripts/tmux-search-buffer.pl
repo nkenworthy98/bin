@@ -5,7 +5,6 @@ use Getopt::Long qw(GetOptions HelpMessage);
 use Term::ANSIColor qw(colored);
 
 my $tmp_file = '/tmp/tmux-search-buffer.txt';
-my $tmux_active_regex = qr{^(\d+):.*?\(active\)};
 
 GetOptions(
     'help|h' => sub { HelpMessage(0) },
@@ -18,17 +17,6 @@ GetOptions(
 system("tmux capture-pane -S - -J -p > $tmp_file");
 system("tmux new-window -n search");
 system("tmux send-keys 'tmux-search-buffer.pl --prompt' Enter\;");
-
-sub parse_number_at_line_start {
-    my ($line) = @_;
-
-    if ($line =~ /^(\d+):/) {
-        return $1;
-    }
-    else {
-        die "Unable to parse number at line start: $!";
-    }
-}
 
 sub prompt_and_filter_lines {
     my ($file) = @_;
