@@ -46,35 +46,8 @@ sub prompt_and_filter_lines {
     while (my $line = <$fh>) {
         chomp($line);
         if ($line =~ /$regex/i) {
-            my @matches = ($line =~ /($regex)/gi);
-            my @parts;
-
-            foreach my $match (@matches) {
-                my $colored_match = colored($match, 'bold red');
-
-                my $match_index = index($line, $match);
-                my $match_len = length($match);
-                substr($line, $match_index, $match_len, $colored_match);
-
-                # # remove part of line through $colored_match, so the remaining
-                # # matches can continue to be highlighted without affecting the
-                # # substrings that have already been highlighted
-                my $colored_index = index($line, $colored_match);
-                my $colored_match_len = length($colored_match);
-                my $index_after_match = $colored_index + $colored_match_len;
-                my $part_with_match = substr($line, 0, $index_after_match);
-                my $remaining_part = substr($line, $index_after_match);
-
-                push(@parts, $part_with_match);
-                $line = $remaining_part;
-
-            }
-
-            # add the remaining part of the line that doesn't have any more
-            # matches
-            push(@parts, $line);
-            my $colored_line = join('', @parts);
-            print $colored_line, "\n";
+            $line =~ s/($regex)/colored($1, 'bold red')/egi;
+            print $line, "\n";
         }
     }
 
