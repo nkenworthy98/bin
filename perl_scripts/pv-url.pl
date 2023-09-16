@@ -22,6 +22,11 @@ foreach my $line (reverse @tmux_pane_contents) {
         $vid_url = $1;
         last;
     }
+    # url from ps output (htop or ps x with mpv filtered)
+    elsif ($line =~ m{mpv (https://.*?watch.*?)\s*$}) {
+        $vid_url = $1;
+        last;
+    }
 }
 
 if ($vid_url) {
