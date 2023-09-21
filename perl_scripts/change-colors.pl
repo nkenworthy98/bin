@@ -17,6 +17,7 @@ my $path_tmux_conf = "$home/.tmux.conf";
 my $path_dunst_conf = "$home/.config/dunst/dunstrc";
 my $path_ncmpcpp_conf = "$home/.config/ncmpcpp/config";
 my $path_irssi_conf = "$home/.config/irssi/default.theme";
+my $path_newsboat_conf = "$home/.config/newsboat/config";
 # The paths for the suckless programs expect to have a trailing "/"
 my $path_dwm = "$home/.sucklessPrograms/dwm/";
 my $path_dmenu = "$home/.sucklessPrograms/dmenu/";
@@ -42,6 +43,7 @@ change_dunst_colors($new_color, $path_dunst_conf);
 change_ncmpcpp_colors($new_color, $path_ncmpcpp_conf);
 change_nnn_colors($new_color, $path_shellrc); # nnn colors are defined in shell's rc
 change_irssi_colors($new_color, $path_irssi_conf);
+change_newsboat_colors($new_color, $path_newsboat_conf);
 
 sub is_hex_color_code {
   my $num = shift @_;
@@ -255,6 +257,24 @@ sub change_irssi_colors {
   );
 
   update_file_with_changes($path_conf, \%irssi_changes);
+}
+
+sub change_newsboat_colors {
+  my ($color, $path_conf) = @_;
+
+  chomp(my $color_256 = `hex-to-256.pl --unweighted "$color"`);
+  my $color_256_str = "color$color_256";
+
+  # Examples of lines that will all match:
+  #
+  # color listnormal color65 default dim
+  # color listfocus color65 default
+  # color listfocus_unread color65 default bold
+  my %newsboat_changes = (
+    qr{^color.*?(color\d+)} => $color_256_str,
+  );
+
+  update_file_with_changes($path_conf, \%newsboat_changes);
 }
 
 =head1 NAME
