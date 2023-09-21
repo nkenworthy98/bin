@@ -1,0 +1,64 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long qw(GetOptions);
+use Pod::Usage qw(pod2usage);
+
+# CLI Flags/Variables
+my $append_str;
+my $prepend_str;
+
+GetOptions(
+    'help|h' => sub { pod2usage(0) },
+    'append|a=s' => \$append_str,
+    'prepend|p=s' => \$prepend_str,
+) or pod2usage(1);
+
+unless ($prepend_str || $append_str) {
+    die "Error: must specify either --append or --prepend";
+}
+
+my @input_lines = <STDIN>;
+chomp(@input_lines);
+
+my @converted_lines = map { (defined $prepend_str) ? ("$prepend_str$_") : ($_) }
+                      map { (defined $append_str) ? ("$_$append_str") : ($_) }
+                      @input_lines;
+
+print "$_\n" for @converted_lines;
+
+=head1 NAME
+
+mapl - map lines
+
+=head1 DESCRIPTION
+
+mapl is a script to quickly append or prepend strings to each line read
+from STDIN.
+
+=head1 SYNOPSIS
+
+mapl [OPTION(S)...]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a, --append> STRING
+
+Append STRING to each line read from STDIN.
+
+Note: newlines are chomped before appending the value passed to B<--append>
+and added back.
+
+=item B<-h, --help>
+
+Print this help and quit.
+
+=item B<-p, --prepend> STRING
+
+Prepend STRING to each line read from STDIN.
+
+=back
+
+=cut
