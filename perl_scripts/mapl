@@ -1,17 +1,19 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Getopt::Long qw(GetOptions);
+use Getopt::Long qw(GetOptions :config no_ignore_case);
 use Pod::Usage qw(pod2usage);
 
 # CLI Flags/Variables
 my $append_str;
+my $exclude_matching_lines;
 my $include_matching_lines;
 my $prepend_str;
 
 GetOptions(
-    'help|h' => sub { pod2usage(0) },
     'append|a=s' => \$append_str,
+    'exclude-matching-lines|M=s' => \$exclude_matching_lines,
+    'help|h' => sub { pod2usage(0) },
     'include-matching-lines|m=s' => \$include_matching_lines,
     'prepend|p=s' => \$prepend_str,
 ) or pod2usage(1);
@@ -25,11 +27,20 @@ chomp(@input_lines);
 
 my @converted_lines;
 foreach my $line (@input_lines) {
+    my $go_next = 0;
     if (defined $include_matching_lines) {
         if ($line !~ /$include_matching_lines/) {
-            push(@converted_lines, $line);
-            next;
+            $go_next = 1;
         }
+    }
+    if (defined $exclude_matching_lines) {
+        if ($line =~ /$exclude_matching_lines/) {
+            $go_next = 1;
+        }
+    }
+    if ($go_next) {
+        push(@converted_lines, $line);
+        next;
     }
 
     if (defined $append_str) {
@@ -67,13 +78,19 @@ Append STRING to each line read from STDIN.
 Note: newlines are chomped before appending the value passed to B<--append>
 and added back.
 
+=item B<-M, --exclude-matching-lines> REGEX
+
+Only append/prepend strings to lines that don't match REGEX.
+Can be combined with --include-matching-lines.
+
 =item B<-h, --help>
 
 Print this help and quit.
 
 =item B<-m, --include-matching-lines> REGEX
 
-Only append strings to lines that match REGEX.
+Only append/prepend strings to lines that match REGEX.
+Can be combined with --exclude-matching-lines.
 
 =item B<-p, --prepend> STRING
 
