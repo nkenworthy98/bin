@@ -68,6 +68,9 @@ else {
   }
 }
 
+my @top_level_dirs = grep { ! /\.git/ } `mpc ls`;
+chomp(@top_level_dirs);
+
 my $list_songs_cmd = '';
 if ($search_query) {
   $list_songs_cmd = "mpc -f '%file% --- %title%' search $search_type '$search_query'";
@@ -76,19 +79,20 @@ elsif ($show_cue_titles) {
   # Running mpc's --format (-f) option with listall significantly slows the
   # program down, so only include %title% if the --show-cue-titles flag is
   # passed
-  $list_songs_cmd = 'mpc -f "%file% --- %title%" listall';
+  $list_songs_cmd = generate_mpc_listall_cmd(\@top_level_dirs, '-f "%file% --- %title%"');
 }
 else {
-  $list_songs_cmd = 'mpc listall';
+  $list_songs_cmd = generate_mpc_listall_cmd(\@top_level_dirs);
 }
+
+my @songs = `$list_songs_cmd`;
 
 # Filter out any lines containing .git directories that git-annex creates
 # Otherwise, half of the results are .git followed by hashes
 %search_results_hash = map { split_files_and_titles($_) }
                        grep { (defined $exclude_regex) ? (! /$exclude_regex/i) : ($_) }
                        grep { (defined $regex) ? (/$regex/i) : ($_) }
-                       grep { ! /\.git\// }
-                       `$list_songs_cmd`;
+                       @songs;
 
 @search_results = sort keys %search_results_hash;
 if ($shuffle) {
@@ -156,6 +160,31 @@ sub pipe_to_mpc_insert {
   my ($songs_ref) = @_;
 
   pipe_to_mpc_cmd($songs_ref, "insert");
+}
+
+# If "mpc ls" returns multiple directories, such as "lossless" and "lossy",
+# return a combined version of an mpc listall command.
+#
+# For example, this will return the following string if "lossless" and
+# "lossy" are passed as $dirs_ref:
+#
+# mpc listall lossless; mpc listall lossy
+#
+# I need to do this because mpc listall without any args is also printing all
+# the files in the ".git" directory that were moved because of git-annex
+sub generate_mpc_listall_cmd {
+  my ($dirs_ref, $optional_mpc_args) = @_;
+
+  my @mpc_listall_cmds;
+  if ($optional_mpc_args) {
+    @mpc_listall_cmds = map { "mpc $optional_mpc_args listall $_" } @{$dirs_ref};
+  }
+  else {
+    @mpc_listall_cmds = map { "mpc listall $_" } @{$dirs_ref};
+  }
+  my $joined_mpc_listall_cmd = join('; ', @mpc_listall_cmds);
+
+  return $joined_mpc_listall_cmd;
 }
 
 =head1 NAME
