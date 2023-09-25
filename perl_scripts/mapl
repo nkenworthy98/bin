@@ -6,11 +6,13 @@ use Pod::Usage qw(pod2usage);
 
 # CLI Flags/Variables
 my $append_str;
+my $include_matching_lines;
 my $prepend_str;
 
 GetOptions(
     'help|h' => sub { pod2usage(0) },
     'append|a=s' => \$append_str,
+    'include-matching-lines|m=s' => \$include_matching_lines,
     'prepend|p=s' => \$prepend_str,
 ) or pod2usage(1);
 
@@ -21,9 +23,23 @@ unless ($prepend_str || $append_str) {
 my @input_lines = <STDIN>;
 chomp(@input_lines);
 
-my @converted_lines = map { (defined $prepend_str) ? ("$prepend_str$_") : ($_) }
-                      map { (defined $append_str) ? ("$_$append_str") : ($_) }
-                      @input_lines;
+my @converted_lines;
+foreach my $line (@input_lines) {
+    if (defined $include_matching_lines) {
+        if ($line !~ /$include_matching_lines/) {
+            push(@converted_lines, $line);
+            next;
+        }
+    }
+
+    if (defined $append_str) {
+        $line = $line . $append_str;
+    }
+    if (defined $prepend_str) {
+        $line = $prepend_str . $line;
+    }
+    push(@converted_lines, $line);
+}
 
 print "$_\n" for @converted_lines;
 
@@ -54,6 +70,10 @@ and added back.
 =item B<-h, --help>
 
 Print this help and quit.
+
+=item B<-m, --include-matching-lines> REGEX
+
+Only append strings to lines that match REGEX.
 
 =item B<-p, --prepend> STRING
 
