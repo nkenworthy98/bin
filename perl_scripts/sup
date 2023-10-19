@@ -8,10 +8,12 @@ use Getopt::Long qw(GetOptions :config no_ignore_case bundling);
 use Pod::Usage qw(pod2usage);
 
 # CLI Flags/Variables
+my $notify_flag = 0;
 my $no_pull_flag = 0;
 
 GetOptions(
   'help|h' => sub { pod2usage(0) },
+  'notify|n' => \$notify_flag,
   'no-pull|P' => \$no_pull_flag,
 ) or pod2usage(1);
 
@@ -26,7 +28,11 @@ if ($container_name) {
 }
 chdir($searxng_dir) or die "Error: can't cd into $searxng_dir";
 system("docker pull searxng/searxng") unless $no_pull_flag;
-exec("docker run --rm -d -v $searxng_dir/searxng:/etc/searxng -p $port:8080 -e BASE_URL=http://localhost:$port/ searxng/searxng");
+system("docker run --rm -d -v $searxng_dir/searxng:/etc/searxng -p $port:8080 -e BASE_URL=http://localhost:$port/ searxng/searxng");
+
+if ($notify_flag && $? == 0) {
+  system("notify-send 'sup' 'searxng container started'");
+}
 
 sub get_container_name {
   my @docker_ps_output = `docker ps`;
@@ -61,6 +67,10 @@ sup [OPTION(s)]
 =item B<-h, --help>
 
 Print this help and quit
+
+=item B<-n, --notify>
+
+Use notify-send to let user know when container has been started
 
 =item B<-P, --no-pull>
 
