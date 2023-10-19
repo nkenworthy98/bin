@@ -4,6 +4,16 @@
 # If an instance is already running, this will stop it and start a new one
 use strict;
 use warnings;
+use Getopt::Long qw(GetOptions :config no_ignore_case bundling);
+use Pod::Usage qw(pod2usage);
+
+# CLI Flags/Variables
+my $no_pull_flag = 0;
+
+GetOptions(
+  'help|h' => sub { pod2usage(0) },
+  'no-pull|P' => \$no_pull_flag,
+) or pod2usage(1);
 
 my $searxng_dir = "$ENV{'HOME'}/.otherPrograms/searxng-docker";
 my $port = 8888;
@@ -15,7 +25,7 @@ if ($container_name) {
   system("docker stop $container_name");
 }
 chdir($searxng_dir) or die "Error: can't cd into $searxng_dir";
-system("docker pull searxng/searxng");
+system("docker pull searxng/searxng") unless $no_pull_flag;
 exec("docker run --rm -d -v $searxng_dir/searxng:/etc/searxng -p $port:8080 -e BASE_URL=http://localhost:$port/ searxng/searxng");
 
 sub get_container_name {
@@ -29,3 +39,33 @@ sub get_container_name {
     }
   }
 }
+
+=head1 NAME
+
+sup - searxng up
+
+=head1 DESCRIPTION
+
+Pull down latest searxng image and start it up
+
+If an instance is already running, this will stop it and start a new one
+
+=head1 SYNOPSIS
+
+sup [OPTION(s)]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-h, --help>
+
+Print this help and quit
+
+=item B<-P, --no-pull>
+
+Don't run docker pull before starting new searxng container
+
+=back
+
+=cut
