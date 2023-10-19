@@ -5,7 +5,7 @@ use warnings;
 use File::Copy;
 use File::Temp qw(tempfile);
 
-if (grep { /(?!grep) newsboat/ } `ps aux`) {
+if (grep { /(?<!grep) newsboat/ } `ps aux`) {
     system("killall newsboat");
 }
 
