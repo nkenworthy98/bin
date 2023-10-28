@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use JSON;
+use POSIX qw(strftime);
 
 my @paths;
 
@@ -55,6 +56,8 @@ foreach my $key (keys %keys_and_files) {
     my $file = $keys_and_files{$key};
     $git_log_output =~ s/$key/$file/g;
 }
+
+$git_log_output =~ s/(\d+).\d+s/strftime("%F %T", localtime($1))/eg;
 
 open(my $less_pipe, "|-", 'less -R')
     or die "Error when opening pipe to 'less -R' $!";
