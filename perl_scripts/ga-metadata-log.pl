@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Currently only works when run at root of git annex dir
+# Script to show the git log of the metadata information stored in git-annex
 use strict;
 use warnings;
 use JSON;
